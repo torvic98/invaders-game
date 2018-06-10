@@ -1,0 +1,4254 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000                 AREA             datos,DATA
+    2 00000000         ; variables y constantes
+    3 00000000 FFFFF000 
+                       VICBaseEnabl
+                               EQU              0xFFFFF000  ;base para activar 
+                                                            IRQ
+    4 00000000 00000010 
+                       IntEnableOffset
+                               EQU              0x10        ;selecciona activar
+                                                             IRQ4
+    5 00000000 00000004 
+                       IRQ_Timer0
+                               EQU              4           ;Nº de IRQ4 del Tim
+                                                            er 0
+    6 00000000 00000007 
+                       IRQ_UART
+                               EQU              7           ;Nº de IRQ7 del UAR
+                                                            T
+    7 00000000         
+    8 00000000 FFFFF010 
+                       VICIntEnable
+                               EQU              0xFFFFF010
+    9 00000000 FFFFF014 
+                       VICIntEnClr
+                               EQU              0xFFFFF014  ;desactivar IRQs (s
+                                                            olo bits 1)
+   10 00000000         
+   11 00000000 FFFFF100 
+                       VICVectAddr0
+                               EQU              0xFFFFF100
+   12 00000000         ;Registro con la @ de la 1ª instr de la RSI_IRQ0 vectori
+                       zada
+   13 00000000 FFFFF030 
+                       VICVectAddr
+                               EQU              0xFFFFF030  ;Registro @VI
+   14 00000000 E0004000 
+                       T0_IR   EQU              0xE0004000
+   15 00000000 E0010000 
+                       UART_IR EQU              0xE0010000
+   16 00000000 00000080 
+                       I_Bit   EQU              0x80        ;bit7 de la CPSR, s
+                                                            i a 1 inhibe
+   17 00000000         
+   18 00000000         ;Globales
+   19 00000000         
+   20 00000000 00000000 
+                       reloj   DCD              0           ;contador de centes
+                                                            imas de segundo
+   21 00000004 00      fin     DCB              0           ;indicador fin de p
+                                                            rograma (si vale 1)
+                                                            
+   22 00000005 00000020 
+                       MINUS   EQU              'a' - 'A'
+   23 00000005 00 00 00        ALIGN            4
+   24 00000008 00000000 
+                       ASCII   DCD              0           ;caracter pulsado
+   25 0000000C         
+   26 0000000C         ;vuestras variables y constantes
+   27 0000000C 40007E00 
+
+
+
+ARM Macro Assembler    Page 2 
+
+
+                       DIR_SCREEN
+                               EQU              0x40007E00  ;direción de la pan
+                                                            talla
+   28 0000000C 00000010 
+                       SCREEN_R
+                               EQU              16          ;filas de la pantal
+                                                            la
+   29 0000000C 00000020 
+                       SCREEN_C
+                               EQU              32          ;columnas de la pan
+                                                            talla
+   30 0000000C 00000200 
+                       SCREEN_PX
+                               EQU              SCREEN_R*SCREEN_C ;numero de pi
+                                                            xeles (@s) de la pa
+                                                            ntalla
+   31 0000000C 20 20 20 
+              20 20 20 
+              20 5F 5F 
+              5F 20 20 
+              5F 5F 20 
+              20 20 20 
+              20 20 20 
+              20 20 5F 
+              5F 5F 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 7C 
+              20 20 20 
+              20 7C 20 
+              20 7C 20 
+              7C 5C 20 
+              2F 7C 20 
+              7C 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 7C 20 
+              5F 5F 20 
+              7C 5F 5F 
+              7C 20 7C 
+              20 56 20 
+              7C 20 7C 
+              5F 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              7C 20 20 
+              7C 20 7C 
+              20 20 7C 
+              20 7C 20 
+              20 20 7C 
+              20 7C 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+
+
+
+ARM Macro Assembler    Page 3 
+
+
+              20 20 20 
+              20 20 7C 
+              5F 5F 7C 
+              20 7C 20 
+              20 7C 20 
+              7C 20 20 
+              20 7C 20 
+              7C 5F 5F 
+              5F 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 5F 
+              5F 20 20 
+              20 20 20 
+              20 20 20 
+              20 5F 5F 
+              5F 20 20 
+              5F 5F 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              7C 20 20 
+              7C 20 7C 
+              20 20 20 
+              7C 20 7C 
+              20 20 20 
+              20 7C 20 
+              20 5C 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 7C 
+              20 20 7C 
+              20 7C 20 
+              20 20 7C 
+              20 7C 5F 
+              20 20 20 
+              7C 5F 5F 
+              7C 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 7C 20 
+              20 7C 20 
+              20 5C 20 
+              2F 20 20 
+              7C 20 20 
+              20 20 7C 
+              20 5C 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              7C 5F 5F 
+              7C 20 20 
+              20 56 20 
+              20 20 7C 
+
+
+
+ARM Macro Assembler    Page 4 
+
+
+              5F 5F 5F 
+              20 7C 20 
+              20 5C 20 
+              20 20 20 
+              20 20    SCREEN_GAMEOVER
+                               DCB              0x20,0x20,0x20,0x20,0x20,0x20,0
+x20,0x5F,0x5F,0x5F,0x20,0x20,0x5F,0x5F,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,
+0x20,0x5F,0x5F,0x5F,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20
+,0x7C,0x20,0x20,0x20,0x20,0x7C,0x20,0x20,0x7C,0x20,0x7C,0x5C,0x20,0x2F,0x7C,0x2
+0,0x7C,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x
+20,0x7C,0x20,0x5F,0x5F,0x20,0x7C,0x5F,0x5F,0x7C,0x20,0x7C,0x20,0x56,0x20,0x7C,0
+x20,0x7C,0x5F,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,
+0x20,0x7C,0x20,0x20,0x7C,0x20,0x7C,0x20,0x20,0x7C,0x20,0x7C,0x20,0x20,0x20,0x7C
+,0x20,0x7C,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x2
+0,0x20,0x7C,0x5F,0x5F,0x7C,0x20,0x7C,0x20,0x20,0x7C,0x20,0x7C,0x20,0x20,0x20,0x
+7C,0x20,0x7C,0x5F,0x5F,0x5F,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0
+x20,0x20,0x20,0x5F,0x5F,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x5F,0x5F,
+0x5F,0x20,0x20,0x5F,0x5F,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20
+,0x20,0x20,0x7C,0x20,0x20,0x7C,0x20,0x7C,0x20,0x20,0x20,0x7C,0x20,0x7C,0x20,0x2
+0,0x20,0x20,0x7C,0x20,0x20,0x5C,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x
+20,0x20,0x20,0x7C,0x20,0x20,0x7C,0x20,0x7C,0x20,0x20,0x20,0x7C,0x20,0x7C,0x5F,0
+x20,0x20,0x20,0x7C,0x5F,0x5F,0x7C,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,
+0x20,0x20,0x20,0x7C,0x20,0x20,0x7C,0x20,0x20,0x5C,0x20,0x2F,0x20,0x20,0x7C,0x20
+,0x20,0x20,0x20,0x7C,0x20,0x5C,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x2
+0,0x20,0x20,0x20,0x7C,0x5F,0x5F,0x7C,0x20,0x20,0x20,0x56,0x20,0x20,0x20,0x7C,0x
+5F,0x5F,0x5F,0x20,0x7C,0x20,0x20,0x5C,0x20,0x20,0x20,0x20,0x20,0x20
+   32 0000014C 0A      SCREEN_GAMEOVER_END
+                               DCB              '\n'
+   33 0000014D 20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              5F 5F 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 5C 20 
+              20 20 2F 
+              20 7C 20 
+              20 7C 20 
+              7C 20 20 
+              7C 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 5C 20 
+              2F 20 20 
+              7C 20 20 
+              7C 20 7C 
+              20 20 7C 
+              20 20 20 
+              20 20 20 
+
+
+
+ARM Macro Assembler    Page 5 
+
+
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 7C 20 
+              20 20 7C 
+              20 20 7C 
+              20 7C 20 
+              20 7C 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              7C 20 20 
+              20 7C 5F 
+              5F 7C 20 
+              7C 5F 5F 
+              7C 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              5F 5F 5F 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              7C 20 20 
+              20 20 20 
+              7C 20 20 
+              7C 20 20 
+              7C 5C 20 
+              20 20 7C 
+              20 7C 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 7C 
+              20 20 7C 
+              20 20 7C 
+              20 20 7C 
+              20 20 7C 
+              20 5C 20 
+              20 7C 20 
+              7C 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 7C 20 
+              20 7C 20 
+              20 7C 20 
+
+
+
+ARM Macro Assembler    Page 6 
+
+
+              20 7C 20 
+              20 7C 20 
+              20 5C 20 
+              7C 20 7C 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 5C 2F 
+              20 5C 2F 
+              20 20 5F 
+              7C 5F 20 
+              7C 20 20 
+              20 5C 7C 
+              20 4F 20 
+              20 20 20 
+              20 20    SCREEN_WIN
+                               DCB              ' ',' ',' ',' ',' ',' ',' ',' '
+,' ',' ',' ',' ',' ',' ',' ','_','_',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' 
+',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','\\',' ',' ',' ','/',' ','|',
+' ',' ','|',' ','|',' ',' ','|',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '
+,' ',' ',' ',' ',' ',' ','\\',' ','/',' ',' ','|',' ',' ','|',' ','|',' ',' ','
+|',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',
+'|',' ',' ',' ','|',' ',' ','|',' ','|',' ',' ','|',' ',' ',' ',' ',' ',' ',' '
+,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|',' ',' ',' ','|','_','_','|
+',' ','|','_','_','|',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','
+ ',' ',' ',' ',' ',' ',' ',' ',' ','_','_','_',' ',' ',' ',' ',' ',' ',' ',' ',
+' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|',' ',' ',' ',' ',' ','|'
+,' ',' ','|',' ',' ','|','\\',' ',' ',' ','|',' ','|',' ',' ',' ',' ',' ',' ','
+ ',' ',' ',' ',' ',' ','|',' ',' ','|',' ',' ','|',' ',' ','|',' ',' ','|',' ',
+'\\',' ',' ','|',' ','|',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|',' 
+',' ','|',' ',' ','|',' ',' ','|',' ',' ','|',' ',' ','\\',' ','|',' ','|',' ',
+' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','\\','/',' ','\\','/',' ',' ','
+_','|','_',' ','|',' ',' ',' ','\\','|',' ','O',' ',' ',' ',' ',' ',' '
+   34 0000028D 0A      SCREEN_WIN_END
+                               DCB              '\n'
+   35 0000028E 20 20 20 
+              20 20 20 
+              20 20 20 
+              20 50 52 
+              45 53 53 
+              20 53 50 
+              41 43 45 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 54 4F 
+              20 53 54 
+              41 52 54 
+              20 20 20 
+              20 20 20 
+              20 20 20 
+              20 20 20 SCREEN_START
+                               DCB              ' ',' ',' ',' ',' ',' ',' ',' '
+,' ',' ','P','R','E','S','S',' ','S','P','A','C','E',' ',' ',' ',' ',' ',' ',' 
+
+
+
+ARM Macro Assembler    Page 7 
+
+
+',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','T','O',' ','S','
+T','A','R','T',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '
+   36 000002CD 0A      SCREEN_START_END
+                               DCB              '\n'
+   37 000002CE 50 41 55 
+              53 45 44 SCREEN_PAUSE
+                               DCB              'P','A','U','S','E','D'
+   38 000002D4 0A      SCREEN_PAUSE_END
+                               DCB              '\n'
+   39 000002D5         
+   40 000002D5 00 00 00        ALIGN            4
+   41 000002D8         
+   42 000002D8 00000020 
+                       CHAR_CLEAR
+                               EQU              ' '         ;caracter de borrad
+                                                            o de pantalla
+   43 000002D8         
+   44 000002D8 00000023 
+                       CHAR_CANYON
+                               EQU              '#'         ;caracter de respre
+                                                            sentación del cañón
+                                                            
+   45 000002D8 0000004B 
+                       CHAR_CANYON_L
+                               EQU              'K'         ;cañon hancia la iz
+                                                            quierda
+   46 000002D8 0000004C 
+                       CHAR_CANYON_R
+                               EQU              'L'         ;cañon hacia la der
+                                                            echa
+   47 000002D8 00000010 
+                       CANYON_CENTER
+                               EQU              SCREEN_C/2  ;centro del cañón e
+                                                            n el instante incia
+                                                            l
+   48 000002D8         
+   49 000002D8 0000002A 
+                       CHAR_BULLET
+                               EQU              '*'         ;caracter de repres
+                                                            entación bala de ca
+                                                            ñon
+   50 000002D8 00000020 
+                       CHAR_BULLET_SHOOT
+                               EQU              0x20
+   51 000002D8 0000002B 
+                       CHAR_BULLET_F
+                               EQU              '+'         ;duplica velocidad 
+                                                            balas
+   52 000002D8 0000002D 
+                       CHAR_BULLET_S
+                               EQU              '-'         ;reduce velodidad b
+                                                            alas
+   53 000002D8 00000001 
+                       BULLET_QUICK
+                               EQU              1           ;centesimas de segu
+                                                            ndo entre movimeint
+                                                            os a máxima velocid
+                                                            ad
+   54 000002D8 00000080 
+
+
+
+ARM Macro Assembler    Page 8 
+
+
+                       BULLET_SLOW
+                               EQU              128         ;centesimas de segu
+                                                            ndo entre movimeint
+                                                            os a minima velocid
+                                                            ad
+   55 000002D8 00000010 
+                       BULLET_SPEED
+                               DCD              16          ;promedio centesima
+                                                            s de segundo entre 
+                                                            movimeintos
+   56 000002DC 10      bullet_timer
+                               DCB              16
+   57 000002DD         
+   58 000002DD 00 00 00        ALIGN            4
+   59 000002E0 0000000A 
+                       bullet_count
+                               DCD              10          ;cantidad inicial d
+                                                            e valas (MAX: 9999)
+                                                            
+   60 000002E4 00000000 
+                       bullets_over
+                               DCD              0           ;contador para acab
+                                                            ar el programa cuan
+                                                            do ya no quedan bal
+                                                            as
+   61 000002E8         ;ALIGN 4
+   62 000002E8 30      bullet_count_d1
+                               DCB              '0'
+   63 000002E9 30      bullet_count_d2
+                               DCB              '0'
+   64 000002EA 31      bullet_count_d3
+                               DCB              '1'
+   65 000002EB 30      bullet_count_d4
+                               DCB              '0'
+   66 000002EC         
+   67 000002EC 00000000 
+                       score   DCD              0           ;puntuación acumula
+                                                            da
+   68 000002F0         ;ALIGN 4
+   69 000002F0 30      score_d1
+                               DCB              '0'
+   70 000002F1 30      score_d2
+                               DCB              '0'
+   71 000002F2 30      score_d3
+                               DCB              '0'
+   72 000002F3 30      score_d4
+                               DCB              '0'
+   73 000002F4         
+   74 000002F4 0000003C 
+                       CHAR_ENEMY_L
+                               EQU              '<'         ;caracter de repres
+                                                            entación de enemigo
+                                                            
+   75 000002F4 0000003E 
+                       CHAR_ENEMY_R
+                               EQU              '>'         ;caracter de repres
+                                                            entación de enemigo
+                                                            
+   76 000002F4 00000041 
+
+
+
+ARM Macro Assembler    Page 9 
+
+
+                       CHAR_ENEMY_F
+                               EQU              'A'         ;duplica velocidad 
+                                                            de enemigos
+   77 000002F4 0000005A 
+                       CHAR_ENEMY_S
+                               EQU              'Z'         ;reduce velodidad d
+                                                            e enemigos
+   78 000002F4 00000002 
+                       ENEMY_MIN
+                               EQU              2           ;minima longitud en
+                                                            emigo
+   79 000002F4 0000000A 
+                       ENEMY_MAX
+                               EQU              10          ;maxima longitud en
+                                                            emigo
+   80 000002F4 00000001 
+                       ENEMY_QUICK
+                               EQU              1           ;centesimas de segu
+                                                            ndo entre movimeint
+                                                            os a máxima velocid
+                                                            ad
+   81 000002F4 00000080 
+                       ENEMY_SLOW
+                               EQU              128         ;centesimas de segu
+                                                            ndo entre movimeint
+                                                            os a minima velocid
+                                                            ad
+   82 000002F4 00000010 
+                       ENEMY_SPEED
+                               DCD              ENEMY_SLOW/8 ;promedio centesim
+                                                            as de segundo entre
+                                                             movimeintos 
+   83 000002F8 00000000 
+                       enemy_timer
+                               DCD              0           ;velocidad del enem
+                                                            igo
+   84 000002FC         
+   85 000002FC         ;struct ENEMIGO{long (0 ó MIN/2 - MAX/2), posx (0 - C), 
+                       dirx(1(r) ó -1(l)), speedx (SLOW - QUICK), timer}
+   86 000002FC 00000008 
+                       ENEMY_REG_FIELD
+                               EQU              8           ;5 campos de regist
+                                                            ro (4x byte + 1x in
+                                                            t)
+   87 000002FC 00000009 
+                       ENEMY_REG_DIM
+                               EQU              9           ;espacio para 9 ene
+                                                            migos
+   88 000002FC 00000048 
+                       ENEMY_REG_SIZE
+                               EQU              ENEMY_REG_FIELD*ENEMY_REG_DIM
+   89 000002FC         ;ALIGN 4
+   90 000002FC 00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+
+
+
+ARM Macro Assembler    Page 10 
+
+
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 
+              00 00 00 ENEMY_REG
+                               SPACE            ENEMY_REG_SIZE
+   91 00000344         
+   92 00000344         ;ALIGN 4
+   93 00000344 00000003 
+                       enemy_count
+                               DCD              3           ;cantidad de enemig
+                                                            os restantes para c
+                                                            ompletar el juego
+   94 00000348         
+   95 00000348 00000050 
+                       CHAR_PAUSE
+                               EQU              'P'         ;pausar
+   96 00000348 00000051 
+                       CHAR_QUIT
+                               EQU              'Q'         ;salir del juego
+   97 00000348         
+   98 00000348                 AREA             codigo,CODE
+   99 00000000                 EXPORT           inicio      ; forma de enlazar 
+                                                            con el startup.s
+  100 00000000                 IMPORT           srand       ; para poder invoca
+                                                            r SBR srand
+  101 00000000                 IMPORT           rand        ; para poder invoca
+                                                            r SBR srand
+  102 00000000         inicio                               ; se recomienda pon
+                                                            er punto de parada 
+                                                            (breakpoint) en la 
+                                                            primera
+  103 00000000         ; instruccion de código para poder ejecutar todo el Star
+                       tup de golpe
+  104 00000000         ;Habilitar interrupcion en VIC
+  105 00000000 E59F0B98        ldr              r0, =VICVectAddr0
+  106 00000004         ;programar @IRQ4 -> RSI_reloj
+  107 00000004 E59F1B98        ldr              r1, =RSI_reloj
+  108 00000008 E3A02004        ldr              r2, =IRQ_Timer0
+  109 0000000C         
+  110 0000000C E7801102        str              r1, [r0, r2, LSL#2]
+  111 00000010         
+  112 00000010         ;programar @IRQ7 -> RSI_teclado
+  113 00000010 E59F1B90        ldr              r1, =RSI_teclado
+  114 00000014 E3A02007        ldr              r2, =IRQ_UART
+  115 00000018         
+  116 00000018 E7801102        str              r1, [r0, r2, LSL#2]
+
+
+
+ARM Macro Assembler    Page 11 
+
+
+  117 0000001C         
+  118 0000001C         ;activar IRQ4,IRQ7
+  119 0000001C E59F0B88        ldr              r0, =VICIntEnable
+  120 00000020 E5901000        ldr              r1, [r0]
+  121 00000024 E3811010        orr              r1, r1, #1<<IRQ_Timer0
+  122 00000028 E3811080        orr              r1, r1, #1<<IRQ_UART
+  123 0000002C E5801000        str              r1, [r0]
+  124 00000030         
+  125 00000030         ;dibujar pantalla inicial
+  126 00000030         ;limpiar toda la pantalla
+  127 00000030 E59F8B78        LDR              r8, =DIR_SCREEN ;r8 = DIRECCIÓN
+                                                             DE INICIO DE PANTA
+                                                            LLA
+  128 00000034 E3A00C02        LDR              r0, =SCREEN_PX ;r0 <-- pixeles 
+                                                            totales en pantalla
+                                                            
+  129 00000038 E52D0004        PUSH             {r0}        ;r0 (pixeles) --> #
+                                                            12 @param
+  130 0000003C E52D8004        PUSH             {r8}        ;r8 (screen) --> #8
+                                                             @param
+  131 00000040 EB000167        bl               SBR_limpiar_pantalla
+  132 00000044 E28DD008        add              sp, sp, #8
+  133 00000048         
+  134 00000048         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 15/05/2017 (BEGIN) ;
+                       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  135 00000048         
+  136 00000048         ;START
+  137 00000048 E59F8B60        LDR              r8, =DIR_SCREEN ;r8 = DIRECCIÓN
+                                                             DE INICIO DE PANTA
+                                                            LLA
+  138 0000004C E3A00020        LDR              r0, =SCREEN_C 
+                                                            ;r0 <-- #SCREEN_C  
+                                                            
+  139 00000050 E3A01005        mov              r1, #5      ;r1 <-- 4 (linea)
+  140 00000054 E0000091        mul              r0, r1, r0  ;r0 <-- offset hast
+                                                            a linea 4
+  141 00000058 E59F1B54        LDR              r1, =SCREEN_START 
+                                                            ;  r1 <-- @START
+  142 0000005C E59F2B54        LDR              r2, =SCREEN_START_END 
+                                                            ;r2 <-- @GO_END
+  143 00000060         bc_start
+  144 00000060 E1510002        cmp              r1, r2      ;if(r0 != r2)
+  145 00000064 0A000003        beq              bc_start_end ; else
+  146 00000068 E4D13001        ldrb             r3, [r1], #1 ;r3 <-- nuevo cara
+                                                            cter
+  147 0000006C E7C83000        strb             r3, [r8, r0] ;r3 --> @pixel 
+  148 00000070 E2800001        add              r0, r0, #1  ;r0++ (siguiente px
+                                                            )
+  149 00000074 EAFFFFF9        b                bc_start
+  150 00000078         bc_start_end
+  151 00000078         
+  152 00000078         ;establecer semilla de números aleatorios
+  153 00000078 E59F0B3C        LDR              r0, =ASCII  ;r0 <-- @ASCII
+  154 0000007C E0222002        eor              r2, r2, r2  ;r2 <--
+  155 00000080         bc_rand
+  156 00000080 E5901000        ldr              r1, [r0]    ;r1 <-- ASCII
+  157 00000084 E2822001        add              r2, r2, #1  ;r2++
+  158 00000088 E3510000        cmp              r1, #0      ;if(r1 != 0)
+  159 0000008C 0AFFFFFB        beq              bc_rand
+
+
+
+ARM Macro Assembler    Page 12 
+
+
+  160 00000090 E52D2004        PUSH             {r2}        ;r0 (semilla) --> #
+                                                            8 @param
+  161 00000094 EBFFFFFE        bl               srand
+  162 00000098 E0211001        eor              r1, r1, r1  ;r1 <-- 0
+  163 0000009C E5801000        str              r1, [r0]    ;r1 (0) --> @ASCII
+  164 000000A0         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 15/05/2017 (END) ;;;
+                       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  165 000000A0         
+  166 000000A0         ;dibujar pantalla inicial
+  167 000000A0         ;limpiar toda la pantalla
+  168 000000A0 E59F8B08        LDR              r8, =DIR_SCREEN ;r8 = DIRECCIÓN
+                                                             DE INICIO DE PANTA
+                                                            LLA
+  169 000000A4 E3A00C02        LDR              r0, =SCREEN_PX ;r0 <-- pixeles 
+                                                            totales en pantalla
+                                                            
+  170 000000A8 E52D0004        PUSH             {r0}        ;r0 (pixeles) --> #
+                                                            12 @param
+  171 000000AC E52D8004        PUSH             {r8}        ;r8 (screen) --> #8
+                                                             @param
+  172 000000B0 EB00014B        bl               SBR_limpiar_pantalla
+  173 000000B4 E28DD008        add              sp, sp, #8
+  174 000000B8         
+  175 000000B8         ;mostrar cañon
+  176 000000B8 E0880000        add              r0, r8, r0  ;r0 <-- ultimo pixe
+                                                            l de la pantalla + 
+                                                            1
+  177 000000BC E2400020        sub              r0, r0, #SCREEN_C ;r0 <-- prime
+                                                            r pixel de la últim
+                                                            a fila
+  178 000000C0 E3A07010        LDR              r7, =CANYON_CENTER ;r7 = POSICI
+                                                            ON CENTRO DEL CAÑÓN
+                                                            
+  179 000000C4 E0809007        add              r9, r0, r7  ;r9 = @PIXEL CENTRA
+                                                            L CAÑÓN
+  180 000000C8 E3A00023        LDR              r0, =CHAR_CANYON ;r0 <-- caract
+                                                            er de representació
+                                                            n del cañón 
+  181 000000CC E5490001        strb             r0, [r9, #-1] ;mostrar cañon de
+                                                             tamaño 3
+  182 000000D0 E5C90000        strb             r0, [r9]
+  183 000000D4 E5C90001        strb             r0, [r9, #1]
+  184 000000D8         
+  185 000000D8         ;mostrar puntuación
+  186 000000D8 E2880001        add              r0, r8, #1  ;r0 <-- @incio del 
+                                                            contador de puntuac
+                                                            ión
+  187 000000DC E59F1ADC        LDR              r1, =score_d1 ;r1 <-- @bullet_c
+                                                            ount
+  188 000000E0 E92D0003        PUSH             {r0, r1}    ;r0 (contador) --> 
+                                                            #8 @param
+  189 000000E4         ;r1 (numero) --> #12 @param
+  190 000000E4 EB00014B        bl               SBR_actualizar_contador
+  191 000000E8 E28DD008        add              sp, sp, #8
+  192 000000EC         
+  193 000000EC         ;mostrar balas retantes
+  194 000000EC E288001B        add              r0, r8, #(SCREEN_C - 5) ;r0 <--
+                                                             direcceción de ini
+                                                            cio del contador de
+
+
+
+ARM Macro Assembler    Page 13 
+
+
+                                                             balas
+  195 000000F0 E59F1ACC        LDR              r1, =bullet_count_d1 ;r1 <-- @b
+                                                            ullet_count
+  196 000000F4 E92D0003        PUSH             {r0, r1}    ;r0 (contador) --> 
+                                                            #8 @param
+  197 000000F8         ;r1 (numero) --> #12 @param
+  198 000000F8 EB000146        bl               SBR_actualizar_contador
+  199 000000FC E28DD008        add              sp, sp, #8
+  200 00000100         
+  201 00000100         
+  202 00000100         ;inicializar juego
+  203 00000100         ;inicializar vector de registro de enemigos 
+  204 00000100 E59F6AC0        LDR              r6, =ENEMY_REG ;r6 = @REGISTRO 
+                                                            DE ENEMIGOS
+  205 00000104 E3A00009        LDR              r0, =ENEMY_REG_DIM ;r0 <-- nume
+                                                            ro máximo de enemig
+                                                            os
+  206 00000108 E3500000        cmp              r0, #0      ;while (r0 > 0) == 
+                                                            for (r0 = ENEMY_REG
+                                                            _DIM; r0 > 0; r0--)
+                                                            
+  207 0000010C DA000004        ble              bc_02_end   ; else (r0 <= 0) --
+                                                            > skip
+  208 00000110 E0211001        eor              r1, r1, r1  ;r1 <-- 0
+  209 00000114 E1A02006        mov              r2, r6      ;r2 <-- @reg enemig
+                                                            os
+  210 00000118 E4C21008 
+                       bc_02   strb             r1, [r2], #ENEMY_REG_FIELD ;@r2
+                                                             <-- 0 (en_pantalla
+                                                             = false)
+  211 0000011C E2500001        subs             r0, r0, #1  ;r0--
+  212 00000120 1AFFFFFC        bne              bc_02       ;continue <-- (r0 !
+                                                            = 0)
+  213 00000124         bc_02_end
+  214 00000124         
+  215 00000124         bucle                                ;comprobar si se ha
+                                                             pulsado nueva tecl
+                                                            a
+  216 00000124 E59F0A90        LDR              r0, =ASCII
+  217 00000128 E5900000        ldr              r0, [r0]
+  218 0000012C E3500000        cmp              r0, #0
+  219 00000130 1B00007D        blne             SBR_teclado
+  220 00000134         
+  221 00000134         ;comprobar si hay que introducir a un nuevo enemigo
+  222 00000134 E59F0A90        LDR              r0, =enemy_timer ;r0 <-- @timer
+                                                             de nuevo enemigo
+  223 00000138 E5901000        ldr              r1, [r0]    ;r1 <-- timer de nu
+                                                            evo enemigo
+  224 0000013C E59F2A8C        LDR              r2, =reloj  ;r2 <-- @reloj
+  225 00000140 E5922000        ldr              r2, [r2]    ;r2 <-- reloj
+  226 00000144 E1520001        cmp              r2, r1      ;if (reloj >= timer
+                                                            ) --> introduir ene
+                                                            migo
+  227 00000148         ; else (timer < reloj) --> skip 
+  228 00000148 AB000141        blge             SBR_intro_enemigo
+  229 0000014C         
+  230 0000014C         ;para cada elemento movil
+  231 0000014C         ;;;;;; ENEMIGOS ;;;;;;;
+  232 0000014C E1A00006        mov              r0, r6      ;r0 <-- @enemigo0
+
+
+
+ARM Macro Assembler    Page 14 
+
+
+  233 00000150 E3A03009        LDR              r3, =ENEMY_REG_DIM ;r3 <-- dime
+                                                            nsión del vector
+  234 00000154 E3530000        cmp              r3, #0      ;while(r3 > 0) == f
+                                                            or(r3 = #ENEMY_REG_
+                                                            DIM; r3 > 0; r3--)
+  235 00000158 0A00000F        beq              bc_03_end   ; else (r3 <= 0) --
+                                                            > skip
+  236 0000015C E5D01000 
+                       bc_03   ldrb             r1, [r0]    ;r1 <-- enemigo.lon
+                                                            g
+  237 00000160 E3510000        cmp              r1, #0      ;if(r1 == 0) --> sk
+                                                            ip (no existe enemi
+                                                            go)
+  238 00000164 0A000009        beq              skip01
+  239 00000168 E5901004        ldr              r1, [r0, #4] ;r1 <-- enemigo.ti
+                                                            mer
+  240 0000016C E59F2A5C        LDR              r2, =reloj
+  241 00000170 E5922000        ldr              r2, [r2]    ;r2 <-- reloj
+  242 00000174         ; si toca mover elemento
+  243 00000174 E1520001        cmp              r2, r1      ;if (reloj >= timer
+                                                            ) --> mover enemigo
+                                                            
+  244 00000178 BA000004        blt              skip01      ; else (timer < rel
+                                                            oj) --> skip
+  245 0000017C E3A04009        LDR              r4, =ENEMY_REG_DIM ;r4 <-- dime
+                                                            nsión del vector
+  246 00000180 E0444003        sub              r4, r4, r3  ;r4 <-- fila del en
+                                                            emigo a mover (inic
+                                                            ia en 0)
+  247 00000184 E92D0011        PUSH             {r0,r4}     ;r0 (enemigo) --> #
+                                                            8 @param
+  248 00000188         ;r4 (fila) --> #12 @param
+  249 00000188 EB000181        bl               SBR_mover_enemigo
+  250 0000018C E28DD008        add              sp, sp, #8
+  251 00000190         
+  252 00000190 E2800008 
+                       skip01  add              r0, r0, #ENEMY_REG_FIELD 
+                                                            ;@enemigo++
+  253 00000194 E2533001        subs             r3, r3, #1  ;r3--
+  254 00000198 1AFFFFEF        bne              bc_03
+  255 0000019C         bc_03_end
+  256 0000019C         ; finsi
+  257 0000019C         
+  258 0000019C         ;;;;;; BALAS ;;;;;;;
+  259 0000019C E59F1A30        LDR              r1, =bullet_timer ;r0 <-- @bull
+                                                            et_timer
+  260 000001A0 E5911000        ldr              r1, [r1]    ;r1 <-- bullet_time
+                                                            r
+  261 000001A4 E59F0A24        LDR              r0, =reloj
+  262 000001A8 E5900000        ldr              r0, [r0]    ;r0 <-- reloj
+  263 000001AC         ; si toca mover elemento
+  264 000001AC E1500001        cmp              r0, r1      ;if (reloj >= timer
+                                                            ) --> mover balas
+  265 000001B0 BA000005        blt              finsi
+  266 000001B4 EB0001CA        bl               SBR_mover_balas
+  267 000001B8         ;;;;;; 2017/05/13
+  268 000001B8 E59F0A18        LDR              r0, =BULLET_SPEED ;r0 <-- @BULL
+                                                            ET_SPEED
+  269 000001BC E5900000        ldr              r0, [r0]    ;r0 <-- BULLET_SPEE
+
+
+
+ARM Macro Assembler    Page 15 
+
+
+                                                            D
+  270 000001C0 E0800001        add              r0, r0, r1  ;r0 <-- next timer
+  271 000001C4 E59F1A08        LDR              r1, =bullet_timer ;r1 <-- @bull
+                                                            et_timer
+  272 000001C8 E5810000        str              r0, [r1]    ;r0 (next_timer) --
+                                                            > @bullet_timer
+  273 000001CC         ;;;;;;
+  274 000001CC         finsi
+  275 000001CC         
+  276 000001CC         ;si fin=0 salto a bucle  
+  277 000001CC E59F0A08        LDR              r0, =fin    ;r0 <-- @fin
+  278 000001D0 E5900000        ldr              r0, [r0]    ;r0 <-- (@fin)
+  279 000001D4 E3500000        cmp              r0, #0      ;if(r0 = 0) --> con
+                                                            tinue
+  280 000001D8 0AFFFFD1        beq              bucle
+  281 000001DC         
+  282 000001DC         ;desactivar IRQ4,IRQ7
+  283 000001DC         ;Desprogramar VIC
+  284 000001DC         ;Inhabilitar interrupciones en el VIC
+  285 000001DC E59F09FC        ldr              r0, =VICIntEnClr
+  286 000001E0 E0211001        eor              r1, r1, r1
+  287 000001E4 E5901000        ldr              r1, [r0]    ;haria falta?
+  288 000001E8         ;desactivar RSI_reloj
+  289 000001E8 E3811010        orr              r1, r1, #1<<IRQ_Timer0
+  290 000001EC         ;desactivar RSI_teclado
+  291 000001EC E3811080        orr              r1, r1, #1<<IRQ_UART
+  292 000001F0         
+  293 000001F0 E5801000        str              r1, [r0]
+  294 000001F4         
+  295 000001F4         ;Limpiar pantalla
+  296 000001F4 E3A00D07        LDR              r0, =(SCREEN_PX-2*SCREEN_C) ;r0
+                                                             <-- pixeles totale
+                                                            s en pantalla - 2 l
+                                                            ineas
+  297 000001F8 E52D0004        PUSH             {r0}        ;r0 (pixeles) --> #
+                                                            12 @param
+  298 000001FC E2888020        add              r8, r8, #SCREEN_C ;r8 <-- @inic
+                                                            io segiunda fila pa
+                                                            ntalla
+  299 00000200 E52D8004        PUSH             {r8}        ;r8 (screen) --> #8
+                                                             @param
+  300 00000204 EB0000F6        bl               SBR_limpiar_pantalla
+  301 00000208 E28DD008        add              sp, sp, #8
+  302 0000020C         
+  303 0000020C E59F09D0        LDR              r0, =enemy_count ;r0 <-- @enemy
+                                                            
+  304 00000210 E5900000        ldr              r0, [r0]    ;r0 <-- enemy
+  305 00000214 E3500000        cmp              r0, #0      ;if(r0 == 0) --> TO
+                                                            DOS LOS ENEMIGOS DE
+                                                            RROTADOS
+  306 00000218 0A00000A        beq              win
+  307 0000021C         
+  308 0000021C         ;GAMEOVER
+  309 0000021C E3A00020 
+                       go      LDR              r0, =SCREEN_C 
+                                                            ;r0 <-- #SCREEN_C  
+                                                            
+  310 00000220 E3A01002        mov              r1, #2      ;r1 <-- 4 (linea)
+  311 00000224 E0000091        mul              r0, r1, r0  ;r0 <-- offset hast
+
+
+
+ARM Macro Assembler    Page 16 
+
+
+                                                            a linea 4
+  312 00000228 E59F19B8        LDR              r1, =SCREEN_GAMEOVER 
+                                                            ;r1 <-- @GO
+  313 0000022C E59F29B8        LDR              r2, =SCREEN_GAMEOVER_END 
+                                                            ;r2 <-- @GO_END
+  314 00000230 E1510002 
+                       bc_go   cmp              r1, r2      ;if(r0 != r2)
+  315 00000234 0A00000E        beq              bfin        ; else
+  316 00000238 E4D13001        ldrb             r3, [r1], #1 ;r3 <-- nuevo cara
+                                                            cter
+  317 0000023C E7C83000        strb             r3, [r8, r0] ;r3 --> @pixel 
+  318 00000240 E2800001        add              r0, r0, #1  ;r0++ (siguiente px
+                                                            )
+  319 00000244 EAFFFFF9        b                bc_go
+  320 00000248         
+  321 00000248         ;WIN
+  322 00000248 E3A00020 
+                       win     LDR              r0, =SCREEN_C 
+                                                            ;r0 <-- #SCREEN_C  
+                                                            
+  323 0000024C E3A01002        mov              r1, #2      ;r1 <-- 4 (linea)
+  324 00000250 E0000091        mul              r0, r1, r0  ;r0 <-- offset hast
+                                                            a linea 4
+  325 00000254 E59F1994        LDR              r1, =SCREEN_WIN ;r1 <-- @WIN
+  326 00000258 E59F2994        LDR              r2, =SCREEN_WIN_END 
+                                                            ;r2 <-- @WIN_END
+  327 0000025C E1510002 
+                       bc_win  cmp              r1, r2      ;if(r0 != r2)
+  328 00000260 0A000003        beq              bfin        ; else
+  329 00000264 E4D13001        ldrb             r3, [r1], #1 ;r3 <-- nuevo cara
+                                                            cter
+  330 00000268 E7C83000        strb             r3, [r8, r0] ;r3 --> @pixel 
+  331 0000026C E2800001        add              r0, r0, #1  ;r0++ (siguiente px
+                                                            )
+  332 00000270 EAFFFFF9        b                bc_win
+  333 00000274         
+  334 00000274 EAFFFFFE 
+                       bfin    b                bfin
+  335 00000278         
+  336 00000278         
+  337 00000278         RSI_reloj                            ;Rutina de servicio
+                                                             a la interrupcion 
+                                                            IRQ4 (timer 0)
+  338 00000278         ;Cada 0,01 s. llega una peticion de interrupcion
+  339 00000278         ;guarda dirección de retorno, palabra de estado, 
+  340 00000278 E24EE004        sub              lr, lr,#4   ;actualiza el PC de
+                                                             retorno para que p
+                                                            unte a la @siguient
+                                                            e
+  341 0000027C E52DE004        push             {lr}        ;guardar PC retorno
+                                                             en pila
+  342 00000280 E14FE000        mrs              r14,spsr    ;guardar estado CPS
+                                                            R_anterior
+  343 00000284 E52DE004        push             {r14}       ;se guarda la spsr 
+                                                            en la pila (usando 
+                                                            lr)
+  344 00000288         
+  345 00000288 E92D0003        PUSH             {r0, r1}    ;guardar registros 
+                                                            utilizados
+
+
+
+ARM Macro Assembler    Page 17 
+
+
+  346 0000028C         
+  347 0000028C         ;activa IRQ
+  348 0000028C E10F1000        mrs              r1,cpsr     ;para habilitar IRQ
+                                                             de la palabra de e
+                                                            stado del modo acti
+                                                            vo
+  349 00000290 E3C11080        bic              r1,r1,#I_Bit ;pone a 0 el bit d
+                                                            e las IRQ
+  350 00000294 E121F001        msr              cpsr_c,r1   ;_c indica se copia
+                                                            n el byte menos sig
+                                                            nificativo
+  351 00000298         
+  352 00000298         ;deactiva del VIC la petición
+  353 00000298 E59F0958        ldr              r0,=T0_IR
+  354 0000029C E3A01001        mov              r1,#1
+  355 000002A0 E5801000        str              r1, [r0]
+  356 000002A4         
+  357 000002A4         ;tratamiento IR
+  358 000002A4 E59F0924        LDR              r0, =reloj  ;r0 <-- @reloj
+  359 000002A8 E5901000        ldr              r1, [r0]    ;r1 <-- reloj
+  360 000002AC E2811001        add              r1, r1, #1  ;r1++
+  361 000002B0 E5801000        str              r1, [r0]
+  362 000002B4         
+  363 000002B4         ;desactiva IRQ
+  364 000002B4 E10F1000        mrs              r1,cpsr
+  365 000002B8 E3811080        orr              r1,r1,#I_Bit
+  366 000002BC E12FF001        msr              cpsr_cxsf,r1 ; [?] Why not _c?
+  367 000002C0         
+  368 000002C0         ;restaura registros
+  369 000002C0 E8BD0003        pop              {r0,r1}
+  370 000002C4         
+  371 000002C4         ;desapila spsr y retorna al programa principal
+  372 000002C4 E49DE004        pop              {r14}
+  373 000002C8 E16FF00E        msr              spsr_cxsf,r14 ;restaura el spsr
+                                                             de la pila
+  374 000002CC E59FE928        ldr              r14,=VICVectAddr
+  375 000002D0 E58EE000        str              r14,[r14]   ; [?] What's this?
+  376 000002D4 E8FD8000        pop              {pc}^       ;^ --> cambio de mo
+                                                            do
+  377 000002D8         
+  378 000002D8         RSI_teclado                          ;Rutina de servicio
+                                                             a la interrupcion 
+                                                            IRQ7 (teclado)
+  379 000002D8         ;al pulsar cada tecla llega peticion de interrupcion IRQ
+                       7
+  380 000002D8         ;guarda dirección de retorno, palabra de estado, 
+  381 000002D8 E24EE004        sub              lr, lr,#4   ;actualiza el PC de
+                                                             retorno para que p
+                                                            unte a la @siguient
+                                                            e
+  382 000002DC E52DE004        push             {lr}        ;guardar PC retorno
+                                                             en pila
+  383 000002E0 E14FE000        mrs              r14,spsr    ;guardar estado CPS
+                                                            R_anterior
+  384 000002E4 E52DE004        push             {r14}       ;se guarda la spsr 
+                                                            en la pila (usando 
+                                                            lr)
+  385 000002E8         
+  386 000002E8 E92D0003        PUSH             {r0, r1}    ;guardar registros 
+
+
+
+ARM Macro Assembler    Page 18 
+
+
+                                                            utilizados
+  387 000002EC         
+  388 000002EC         ;activa IRQ
+  389 000002EC E10F1000        mrs              r1,cpsr     ;para habilitar IRQ
+                                                             de la palabra de e
+                                                            stado del modo acti
+                                                            vo
+  390 000002F0 E3C11080        bic              r1,r1,#I_Bit ;pone a 0 el bit d
+                                                            e las IRQ
+  391 000002F4 E121F001        msr              cpsr_c,r1   ;_c indica se copia
+                                                            n el byte menos sig
+                                                            nificativo
+  392 000002F8         
+  393 000002F8         ;deactiva del VIC la petición
+  394 000002F8         ; [?] Is this necessary?
+  395 000002F8         ;ldr r0,=T0_IR
+  396 000002F8         ;mov r1,#1
+  397 000002F8         ;str r1, [r0]
+  398 000002F8         
+  399 000002F8         ;tratamiento IR
+  400 000002F8 E59F0900        LDR              r0, =UART_IR ;r0 <-- @UART
+  401 000002FC E5901000        ldr              r1, [r0]    ;r1 <-- UART
+  402 00000300 E59F08B4        LDR              r0, =ASCII  ;r0 <-- @ASCII
+  403 00000304 E5801000        str              r1, [r0]    ;r1 --> ASCII
+  404 00000308         
+  405 00000308         ;desactiva IRQ
+  406 00000308 E10F1000        mrs              r1,cpsr
+  407 0000030C E3811080        orr              r1,r1,#I_Bit
+  408 00000310 E12FF001        msr              cpsr_cxsf,r1 ; [?] Why not _c?
+  409 00000314         
+  410 00000314         ;restaura registros
+  411 00000314 E8BD0003        pop              {r0,r1}
+  412 00000318         
+  413 00000318         ;desapila spsr y retorna al programa principal
+  414 00000318 E49DE004        pop              {r14}
+  415 0000031C E16FF00E        msr              spsr_cxsf,r14 ;restaura el spsr
+                                                             de la pila
+  416 00000320 E59FE8D4        ldr              r14,=VICVectAddr
+  417 00000324 E58EE000        str              r14,[r14]   ; [?] What's this?
+  418 00000328 E8FD8000        pop              {pc}^       ;^ --> cambio de mo
+                                                            do
+  419 0000032C         
+  420 0000032C         
+  421 0000032C         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                       ;;;;;;;;;;;;;;;;
+  422 0000032C         ;;;; SBR_teclado             ;;;;
+  423 0000032C         ;;;; ejecuta la acción necesaria según la tecla pulsada 
+                         ;;;;
+  424 0000032C         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                       ;;;;;;;;;;;;;;;;
+  425 0000032C         SBR_teclado                          ;Rutina de tratamei
+                                                            nto de tecla pulsad
+                                                            a
+  426 0000032C         
+  427 0000032C E92D4800        PUSH             {lr, fp}    ;guardar @PC_retorn
+                                                            o y FP_antiguo
+  428 00000330 E1A0B00D        mov              fp, sp      ;nuevo fp correspon
+                                                            de con sp actual
+  429 00000334 E92D000F        PUSH             {r0, r1, r2, r3} ;guardar regis
+
+
+
+ARM Macro Assembler    Page 19 
+
+
+                                                            tros utilizados
+  430 00000338         
+  431 00000338 E59F087C        LDR              r0, =ASCII  ;r1 <-- @ASCII
+  432 0000033C E5901000        ldr              r1, [r0]    ;r1 <-- ASCII
+  433 00000340 E0222002        eor              r2, r2, r2  ;r2 <-- 0
+  434 00000344 E5802000        str              r2,[r0]     ;r2 --> ASCII (borr
+                                                            ar tecla pulsada)
+  435 00000348         
+  436 00000348         ;switch(ASCII ó r1){
+  437 00000348         ;case k:
+  438 00000348 E351004B        cmp              r1, #CHAR_CANYON_L
+  439 0000034C 0A00001C        beq              canyon_izq
+  440 00000350 E351006B        cmp              r1, #CHAR_CANYON_L+MINUS
+  441 00000354 0A00001A        beq              canyon_izq
+  442 00000358         ;case l:
+  443 00000358 E351004C        cmp              r1, #CHAR_CANYON_R
+  444 0000035C 0A000021        beq              canyon_drch
+  445 00000360 E351006C        cmp              r1, #CHAR_CANYON_R+MINUS
+  446 00000364 0A00001F        beq              canyon_drch
+  447 00000368         ;case SPACE:
+  448 00000368 E3510020        cmp              r1, #CHAR_BULLET_SHOOT
+  449 0000036C 0A000026        beq              bullet
+  450 00000370         ;case +:
+  451 00000370 E351002B        cmp              r1, #CHAR_BULLET_F
+  452 00000374 0A000043        beq              bullet_f
+  453 00000378         ;case +:
+  454 00000378 E351002D        cmp              r1, #CHAR_BULLET_S
+  455 0000037C 0A000047        beq              bullet_s
+  456 00000380         ;case a:
+  457 00000380 E3510041        cmp              r1, #CHAR_ENEMY_F
+  458 00000384 0A00004B        beq              enemy_f
+  459 00000388 E3510061        cmp              r1, #CHAR_ENEMY_F+MINUS
+  460 0000038C 0A000049        beq              enemy_f
+  461 00000390         ;case z:
+  462 00000390 E351005A        cmp              r1, #CHAR_ENEMY_S
+  463 00000394 0A000059        beq              enemy_s
+  464 00000398 E351007A        cmp              r1, #CHAR_ENEMY_S+MINUS
+  465 0000039C 0A000057        beq              enemy_s
+  466 000003A0         ;case p:
+  467 000003A0 E3510050        cmp              r1, #CHAR_PAUSE
+  468 000003A4 0A000067        beq              pause
+  469 000003A8 E3510070        cmp              r1, #CHAR_PAUSE+MINUS
+  470 000003AC 0A000065        beq              pause
+  471 000003B0         ;case q:
+  472 000003B0 E3510051        cmp              r1, #CHAR_QUIT
+  473 000003B4 0A000085        beq              quit
+  474 000003B8 E3510071        cmp              r1, #CHAR_QUIT+MINUS
+  475 000003BC 0A000083        beq              quit
+  476 000003C0         ;default
+  477 000003C0 EA000085        b                skip09
+  478 000003C4         
+  479 000003C4         canyon_izq
+  480 000003C4         ;r7 = CENTRO DEL CAÑÓN
+  481 000003C4 E3570001        cmp              r7, #1
+  482 000003C8 0A000083        beq              skip09      ;en el borde izquie
+                                                            rdo
+  483 000003CC         ;ELSE --> mover
+  484 000003CC E2477001        sub              r7, r7, #1  ;r7--
+  485 000003D0 E3A01020        mov              r1, #CHAR_CLEAR 
+
+
+
+ARM Macro Assembler    Page 20 
+
+
+                                                            ;r1 <-- #CHAR_CLEAR
+                                                            
+  486 000003D4 E5C91001        strb             r1, [r9, #1] ;r1 --> eliminar p
+                                                            x de la derecha
+  487 000003D8 E2499001        sub              r9, r9, #1  ;r9--
+  488 000003DC E3A01023        LDR              r1, =CHAR_CANYON 
+                                                            ;r1 <-- rep. cañom
+  489 000003E0 E5491001        strb             r1, [r9, #-1] ;r1 --> mostrar n
+                                                            uevo pixel
+  490 000003E4 EA00007C        b                skip09
+  491 000003E8         
+  492 000003E8         canyon_drch
+  493 000003E8         ;r7 = CENTRO DEL CAÑÓN
+  494 000003E8 E357001E        cmp              r7, #(SCREEN_C - 2) ;if(r7 == p
+                                                            osición maxima)
+  495 000003EC 0A00007A        beq              skip09      ;en el borde derech
+                                                            o
+  496 000003F0         ;ELSE --> mover
+  497 000003F0 E2877001        add              r7, r7, #1  ;r7++
+  498 000003F4 E3A01020        mov              r1, #CHAR_CLEAR 
+                                                            ;r1 <-- #CHAR_CLEAR
+                                                            
+  499 000003F8 E5491001        strb             r1, [r9, #-1] ;r1 --> eliminar 
+                                                            px de la izquierda
+  500 000003FC E2899001        add              r9, r9, #1  ;r9++
+  501 00000400 E3A01023        LDR              r1, =CHAR_CANYON 
+                                                            ;r1 <-- rep. cañón
+  502 00000404 E5C91001        strb             r1, [r9, #1] ;r1 --> mostrar nu
+                                                            evo pixel
+  503 00000408 EA000073        b                skip09
+  504 0000040C         bullet
+  505 0000040C E59F37F0        LDR              r3, =bullet_count ;r3 <-- @bull
+                                                            et_count
+  506 00000410 E5932000        ldr              r2, [r3]    ;r2 <-- num de bala
+                                                             actual
+  507 00000414 E3520000        cmp              r2, #0
+  508 00000418 0A00006F        beq              skip09
+  509 0000041C E2422001        sub              r2, r2, #1  ;r2--
+  510 00000420 E5832000        str              r2, [r3]    ;r2 --> @bullet_cou
+                                                            nt (actualizar nume
+                                                            ro de balas)
+  511 00000424         
+  512 00000424         ;mostrar en pantalla
+  513 00000424 E2491020        sub              r1, r9, #SCREEN_C ;r1 <-- posic
+                                                            ión de la nueva bal
+                                                            a
+  514 00000428 E5D13000        ldrb             r3, [r1]    ;r3 <-- valor actua
+                                                            l del pixel
+  515 0000042C E3A0202A        LDR              r2, =CHAR_BULLET 
+                                                            ;r2 <-- rep. bala
+  516 00000430 E5C12000        strb             r2, [r1]    ;r2 --> @(r1) (most
+                                                            rar nueva bala)
+  517 00000434         
+  518 00000434         ;comprobar si enemigo derrotado
+  519 00000434 E353003C        cmp              r3, #CHAR_ENEMY_L
+  520 00000438 0A000002        beq              enemigo_ultima_fila
+  521 0000043C E353003E        cmp              r3, #CHAR_ENEMY_R
+  522 00000440 0A000000        beq              enemigo_ultima_fila
+  523 00000444 EA000003        b                skip12
+
+
+
+ARM Macro Assembler    Page 21 
+
+
+  524 00000448         
+  525 00000448         enemigo_ultima_fila
+  526 00000448 E3A03008        mov              r3, #ENEMY_REG_DIM-1
+  527 0000044C E52D3004        PUSH             {r3}        ;r3 (enemigo) --> #
+                                                            8 @param
+  528 00000450 EB00015B        bl               SBR_enemigo_derrotado
+  529 00000454 E28DD004        add              sp, sp, #4
+  530 00000458         skip12
+  531 00000458         ;doble bala disparada
+  532 00000458 E353002A        cmp              r3, #CHAR_BULLET
+  533 0000045C 1A000004        bne              skip13
+  534 00000460 E59F379C        LDR              r3, =bullet_count ;r3 <-- @bull
+                                                            et_count
+  535 00000464 E5932000        ldr              r2, [r3]    ;r2 <-- num de bala
+                                                             actual
+  536 00000468 E2822001        add              r2, r2, #1  ;r2++
+  537 0000046C E5832000        str              r2, [r3]    ;r2 --> @bullet_cou
+                                                            nt (actualizar nume
+                                                            ro de balas)
+  538 00000470 EA000059        b                skip09
+  539 00000474         skip13
+  540 00000474         ;actualizar marcador
+  541 00000474 E288101B        add              r1, r8, #(SCREEN_C - 5) ;r0 <--
+                                                             direcceción de ini
+                                                            cio del contador de
+                                                             balas
+  542 00000478 E52D1004        PUSH             {r1}        ;r1 (contador) --> 
+                                                            #8 @param
+  543 0000047C EB0001B7        bl               SBR_restar_marcador
+  544 00000480 E28DD004        add              sp, sp, #4
+  545 00000484 EA000054        b                skip09
+  546 00000488         
+  547 00000488         bullet_f
+  548 00000488 E59F1748        LDR              r1, =BULLET_SPEED ;r1 <-- @BULL
+                                                            ET_SPEED
+  549 0000048C E5912000        ldr              r2, [r1]    ;r1 <-- velocidad a
+                                                            ctual
+  550 00000490 E3520001        cmp              r2, #BULLET_QUICK
+  551 00000494 C1A020A2        movgt            r2, r2, lsr #1 ;r2(delay) <-- d
+                                                            elay = delay/2
+  552 00000498 E5812000        str              r2, [r1]    ;r2 --> salvar camb
+                                                            ios
+  553 0000049C EA00004E        b                skip09
+  554 000004A0         
+  555 000004A0         bullet_s
+  556 000004A0 E59F1730        LDR              r1, =BULLET_SPEED
+  557 000004A4 E5912000        ldr              r2, [r1]    ;r1 <-- velocidad a
+                                                            ctual
+  558 000004A8 E3520080        cmp              r2, #BULLET_SLOW
+  559 000004AC B1A02082        movlt            r2, r2, lsl #1 ;r2(delay) <-- d
+                                                            elay = delay*2
+  560 000004B0 E5812000        str              r2, [r1]    ;r2 --> salvar camb
+                                                            ios
+  561 000004B4 EA000048        b                skip09
+  562 000004B8         
+  563 000004B8         enemy_f
+  564 000004B8 E59F1748        LDR              r1, =ENEMY_SPEED
+  565 000004BC E5912000        ldr              r2, [r1]    ;r1 <-- velocidad a
+                                                            ctual
+
+
+
+ARM Macro Assembler    Page 22 
+
+
+  566 000004C0 E3520001        cmp              r2, #ENEMY_QUICK
+  567 000004C4 DA000044        ble              skip09
+  568 000004C8 E1A020A2        mov              r2, r2, lsr #1 ;r2(delay) <-- d
+                                                            elay = delay/2
+  569 000004CC E5812000        str              r2, [r1]    ;e2 --> salvar camb
+                                                            ios
+  570 000004D0         
+  571 000004D0         ;modificar velocidad enemigos
+  572 000004D0 E3A03009        LDR              r3, =ENEMY_REG_DIM ;r3 <-- nume
+                                                            ro de enemigos
+  573 000004D4 E3530000        cmp              r3, #0
+  574 000004D8 0A00003F        beq              skip09
+  575 000004DC E1A01006        mov              r1, r6      ;r1 <-- r6 (@ENEMY_
+                                                            REG)
+  576 000004E0 E5D12003 
+                       bc_11   ldrb             r2, [r1, #3] ;r2 <-- velocidad 
+                                                            actual
+  577 000004E4 E3520001        cmp              r2, #ENEMY_QUICK
+  578 000004E8 C1A020A2        movgt            r2, r2, lsr #1 ;r2(delay) <-- d
+                                                            elay = delay/2
+  579 000004EC C5C12003        strgtb           r2, [r1, #3] ;r2 --> salvar cam
+                                                            bios
+  580 000004F0 E2811008        add              r1, r1, #ENEMY_REG_FIELD ;r1(++
+                                                            ) --> siguiente ene
+                                                            migo
+  581 000004F4 E2533001        subs             r3, r3, #1  ;r3--
+  582 000004F8 1AFFFFF8        bne              bc_11
+  583 000004FC EA000036        b                skip09
+  584 00000500         
+  585 00000500         enemy_s
+  586 00000500 E59F1700        LDR              r1, =ENEMY_SPEED ;r1 <-- @ENEMY
+                                                            _SPEED
+  587 00000504 E5912000        ldr              r2, [r1]    ;r2 <-- velocidad a
+                                                            ctual
+  588 00000508 E3520080        cmp              r2, #ENEMY_SLOW
+  589 0000050C AA000032        bge              skip09
+  590 00000510 E1A02082        mov              r2, r2, lsl #1 ;r2(delay) <-- d
+                                                            elay = delay*2
+  591 00000514 E5812000        str              r2, [r1]    ;r2 --> salvar camb
+                                                            ios
+  592 00000518         
+  593 00000518         ;modificar velocidad enemigos
+  594 00000518 E3A03009        LDR              r3, =ENEMY_REG_DIM ;r3 <-- nume
+                                                            ro de enemigos
+  595 0000051C E3530000        cmp              r3, #0
+  596 00000520 0A00002D        beq              skip09
+  597 00000524 E1A01006        mov              r1, r6      ;r1 <-- r6 (@ENEMY_
+                                                            REG)
+  598 00000528 E5D12003 
+                       bc_12   ldrb             r2, [r1, #3] ;r1 <-- velocidad 
+                                                            actual
+  599 0000052C E3520080        cmp              r2, #ENEMY_SLOW
+  600 00000530 B1A02082        movlt            r2, r2, lsl #1 ;r2(delay) <-- d
+                                                            elay = delay*2
+  601 00000534 B5C12003        strltb           r2, [r1, #3] ;r2 --> salvar cam
+                                                            bios
+  602 00000538 E2811008        add              r1, r1, #ENEMY_REG_FIELD ;r1(++
+                                                            ) siguiente enemigo
+                                                            
+
+
+
+ARM Macro Assembler    Page 23 
+
+
+  603 0000053C E2533001        subs             r3, r3, #1  ;r3--
+  604 00000540 1AFFFFF8        bne              bc_12
+  605 00000544 EA000024        b                skip09
+  606 00000548         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 15/05/2017
+  607 00000548         pause
+  608 00000548         ;Inhabilitar interrupciones en el VIC
+  609 00000548 E59F0690        ldr              r0, =VICIntEnClr
+  610 0000054C E0211001        eor              r1, r1, r1
+  611 00000550         ;desactivar RSI_reloj
+  612 00000550 E3811010        orr              r1, r1, #1<<IRQ_Timer0
+  613 00000554 E5801000        str              r1, [r0]
+  614 00000558         
+  615 00000558         
+  616 00000558 E59F06AC        LDR              r0, =DIR_SCREEN+(SCREEN_C-6)/2 
+                                                            ;r2 <-- centrar tex
+                                                            to en la primera lí
+                                                            nea
+  617 0000055C E59F16AC        LDR              r1, =SCREEN_PAUSE 
+                                                            ;r1 <-- @PAUSE
+  618 00000560 E59F26AC        LDR              r2, =SCREEN_PAUSE_END 
+                                                            ;r0 <-- @PAUSE_END
+  619 00000564         bc_pause_msg
+  620 00000564 E1510002        cmp              r1, r2      ;if(r0 != r2)
+  621 00000568 0A000002        beq              bc_pause_msg_end ; else
+  622 0000056C E4D13001        ldrb             r3, [r1], #1 ;r3 <-- nuevo cara
+                                                            cter
+  623 00000570 E4C03001        strb             r3, [r0], #1 ;r3 --> @pixel 
+  624 00000574 EAFFFFFA        b                bc_pause_msg
+  625 00000578         bc_pause_msg_end
+  626 00000578         
+  627 00000578 E59F163C        LDR              r1, =ASCII  ;r1 <-- @ ASCII
+  628 0000057C         bc_pause
+  629 0000057C E5910000        ldr              r0, [r1]    ;r0 <-- ASCII 
+  630 00000580 E3500050        cmp              r0, #CHAR_PAUSE ;if(r0 == CHAR_
+                                                            PAUSE)
+  631 00000584 0A000002        beq              bc_pause_end
+  632 00000588 E3500070        cmp              r0, #CHAR_PAUSE+MINUS ;if(r0 ==
+                                                             CHAR_PAUSE (MINUS)
+                                                            )
+  633 0000058C 0A000000        beq              bc_pause_end
+  634 00000590 EAFFFFF9        b                bc_pause
+  635 00000594         bc_pause_end
+  636 00000594         
+  637 00000594 E0200000        eor              r0, r0, r0  ;r0 <-- 0
+  638 00000598 E5810000        str              r0,[r1]
+  639 0000059C         
+  640 0000059C E59F0668        LDR              r0, =DIR_SCREEN+(SCREEN_C-6)/2 
+                                                            ;r2 <-- centrar tex
+                                                            to en la primera lí
+                                                            nea
+  641 000005A0 E3A01006        LDR              r1, =SCREEN_PAUSE_END-SCREEN_PA
+USE 
+                                                            ;r0 <-- CARACTERES 
+                                                            A BORRAR
+  642 000005A4 E3A02020        mov              r2, #CHAR_CLEAR 
+                                                            ;r2 <-- CHAR_CLEAR
+  643 000005A8         bc_pause_clr
+  644 000005A8 E3510000        cmp              r1, #0      ;if(r0 != #0)
+  645 000005AC DA000002        ble              bc_pause_clr_end ; else
+
+
+
+ARM Macro Assembler    Page 24 
+
+
+  646 000005B0 E4C02001        strb             r2, [r0], #1 ;r2 --> @pixel
+  647 000005B4 E2411001        sub              r1, r1, #1  ;r1-- 
+  648 000005B8 EAFFFFFA        b                bc_pause_clr
+  649 000005BC         bc_pause_clr_end
+  650 000005BC         
+  651 000005BC         ;Rehabilitar interrupciones en el VIC
+  652 000005BC E59F05E8        ldr              r0, =VICIntEnable
+  653 000005C0 E0211001        eor              r1, r1, r1
+  654 000005C4         ;desactivar RSI_reloj
+  655 000005C4 E3811010        orr              r1, r1, #1<<IRQ_Timer0
+  656 000005C8 E5801000        str              r1, [r0]
+  657 000005CC EA000002        b                skip09
+  658 000005D0         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 15/
+                       05/2017
+  659 000005D0         
+  660 000005D0         quit
+  661 000005D0 E59F1604        LDR              r1, =fin    ;r1 <-- @ fin
+  662 000005D4 E3A02001        mov              r2, #1      ;r2 <-- 1
+  663 000005D8 E5812000        str              r2, [r1]    ;FIN DEL PROGRAMA
+  664 000005DC         
+  665 000005DC         skip09
+  666 000005DC         
+  667 000005DC E8BD000F        POP              {r0, r1, r2, r3} ;guardar regis
+                                                            tros utilizados
+  668 000005E0 E8BD8800        POP              {pc, fp}    ;guardar @PC_retorn
+                                                            o y FP_antiguo
+  669 000005E4         
+  670 000005E4         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                       ;;;;;;;;;;;;;;;;
+  671 000005E4         ;;;; SBR_limpiar_pantalla          ;;;;
+  672 000005E4         ;;;; pone a cero los [pixeles] primeros bits de la panat
+                       alla  ;;;;
+  673 000005E4         ;;;; comenzando desde la dirección [screen]      ;;;;
+  674 000005E4         ;;;; #8 @param: screen --> @ de la pantalla      ;;;;
+  675 000005E4         ;;;; #12 @param: pixeles --> numero de pixeles a borrar 
+                         ;;;;
+  676 000005E4         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                       ;;;;;;;;;;;;;;;;
+  677 000005E4         SBR_limpiar_pantalla
+  678 000005E4 E92D4800        PUSH             {lr, fp}    ;guardar @PC_retorn
+                                                            o y FP_antiguo
+  679 000005E8 E1A0B00D        mov              fp, sp      ;nuevo fp correspon
+                                                            de con sp actual
+  680 000005EC         
+  681 000005EC E92D0007        PUSH             {r0, r1, r2} ;guardar registros
+                                                             utilizados
+  682 000005F0         
+  683 000005F0 E59B0008        ldr              r0, [fp, #8] ;r0 <-- dirección 
+                                                            inicial de pantalla
+                                                            
+  684 000005F4 E59B100C        ldr              r1, [fp, #12] ;r1 <-- numero de
+                                                             pixeles de la pant
+                                                            alla
+  685 000005F8 E3A02020        mov              r2, #CHAR_CLEAR 
+                                                            ;r2 <-- CHAR_CLEAR 
+                                                            
+  686 000005FC         
+  687 000005FC E3510000        cmp              r1, #0      ;while(r1 > 0){
+  688 00000600 DA000002        ble              bc_01_end   ; else (r1 <= 0) --
+
+
+
+ARM Macro Assembler    Page 25 
+
+
+                                                            > b fin
+  689 00000604 E4C02001 
+                       bc_01   strb             r2, [r0], #1 ;lipiar un pixel
+  690 00000608 E2511001        subs             r1, r1, #1  ;r1--
+  691 0000060C 1AFFFFFC        bne              bc_01       ;continue <-- (r1 !
+                                                            = 0)
+  692 00000610         bc_01_end
+  693 00000610         
+  694 00000610 E8BD0007        POP              {r0, r1, r2} ;salir de la SBR
+  695 00000614 E8BD8800        POP              {pc, fp}
+  696 00000618         
+  697 00000618         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                       ;;;;;;;;;;;;;;;;
+  698 00000618         ;;;; SBR_actualizar_contador          ;;;;
+  699 00000618         ;;;; traslada el buffer del [numero] al área de pantalla
+                          ;;;;
+  700 00000618         ;;;; destinada para el a la derecha de la dirección [con
+                       tador] ;;;;
+  701 00000618         ;;;; #8 @param: contador --> @ del contador en pantalla 
+                         ;;;;
+  702 00000618         ;;;; #12 @param: numero --> @ al buffer del numero a mos
+                       trar  ;;;;
+  703 00000618         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                       ;;;;;;;;;;;;;;;;
+  704 00000618         SBR_actualizar_contador
+  705 00000618 E92D4800        PUSH             {lr, fp}    ;guardar @PC_retorn
+                                                            o y FP_antiguo
+  706 0000061C E1A0B00D        mov              fp, sp      ;nuevo fp correspon
+                                                            de con sp actual
+  707 00000620         
+  708 00000620 E92D0003        PUSH             {r0, r1}    ;guardar registros 
+                                                            utilizados
+  709 00000624         
+  710 00000624 E59B0008        ldr              r0, [fp, #8] ;r0 <-- @ inicial 
+                                                            del contador
+  711 00000628 E59B100C        ldr              r1, [fp, #12] ;r1 <-- @ inicio 
+                                                            numero representado
+                                                             (MAX: 9999)
+  712 0000062C         
+  713 0000062C E5911000        ldr              r1, [r1]    ;r2 <-- 4 cifras de
+                                                            l numero
+  714 00000630 E5C01000        strb             r1, [r0, #0] ;r2 --> 4 cifras d
+                                                            el contador
+  715 00000634 E1A01421        mov              r1, r1, lsr #8 ; siguiente byte
+                                                             (8-bits) del numer
+                                                            o
+  716 00000638 E5C01001        strb             r1, [r0, #1]
+  717 0000063C E1A01421        mov              r1, r1, lsr #8
+  718 00000640 E5C01002        strb             r1, [r0, #2]
+  719 00000644 E1A01421        mov              r1, r1, lsr #8
+  720 00000648 E5C01003        strb             r1, [r0, #3]
+  721 0000064C         
+  722 0000064C         
+  723 0000064C E8BD0003        POP              {r0, r1}    ;salir de la SBR
+  724 00000650 E8BD8800        POP              {pc, fp}
+  725 00000654         
+  726 00000654         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                       ;;;;;;;;;;;;;;;;
+  727 00000654         ;;;; SBR_intro_enemigo           ;;;;
+
+
+
+ARM Macro Assembler    Page 26 
+
+
+  728 00000654         ;;;; introduce en el juego un nuevo enemigo calculando s
+                       us  ;;;;
+  729 00000654         ;;;; parámetros aleatoriamente         ;;;;
+  730 00000654         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                       ;;;;;;;;;;;;;;;;
+  731 00000654         SBR_intro_enemigo
+  732 00000654 E92D4800        PUSH             {lr, fp}    ;guardar @PC_retorn
+                                                            o y FP_antiguo
+  733 00000658 E1A0B00D        mov              fp, sp      ;nuevo fp correspon
+                                                            de con sp actual
+  734 0000065C         
+  735 0000065C E92D000F        PUSH             {r0, r1, r2, r3} ;guardar regis
+                                                            tros utilizados
+  736 00000660         
+  737 00000660         ;ALEATORIO --> Momento siguinete aparición
+  738 00000660 E24DD004        sub              sp, sp, #4  ;@resul
+  739 00000664 EBFFFFFE        bl               rand
+  740 00000668 E49D0004        POP              {r0}        ;r0 <-- numero pseu
+                                                            do aleatorio
+  741 0000066C E2000E1F        and              r0, r0, #31<<4 ;r0 <-- enmascar
+                                                            ar el núemro entre 
+                                                            16 - 512
+  742 00000670 E2800010        add              r0, r0, #1<<4 ; aseguramos que 
+                                                            r0 no sea 0
+  743 00000674 E59F1550        LDR              r1, =enemy_timer ;r1 <-- @enemy
+                                                            _timer
+  744 00000678 E5912000        ldr              r2, [r1]    ;r2 <-- enemy_timer
+                                                            
+  745 0000067C E0822000        add              r2, r2, r0  ;r2 <-- nuevo timer
+                                                            
+  746 00000680 E5812000        str              r2, [r1]    ;r2 --> @enemy_time
+                                                            r
+  747 00000684         
+  748 00000684         ;ALEATORIO --> Línea de aparición (1-14)
+  749 00000684 E24DD004        sub              sp, sp, #4  ;@resul
+  750 00000688 EBFFFFFE        bl               rand
+  751 0000068C E49D0004        POP              {r0}        ;r0 <-- numero pseu
+                                                            do aleatorio
+  752 00000690 E200000F        and              r0, r0, #SCREEN_R-1 ;r0 <-- enm
+                                                            ascarar el núemro e
+                                                            ntre 0 - 15
+  753 00000694 E350000D        cmp              r0, #SCREEN_R-3 ;if (r0 > 13){
+  754 00000698 C3A0000D        movgt            r0, #SCREEN_R-3 ; r0 <-- 13
+  755 0000069C         
+  756 0000069C E3A02008        LDR              r2, =ENEMY_REG_FIELD ;r2 <-- #E
+                                                            NEMY_FIELD
+  757 000006A0 E0010290        mul              r1, r0, r2  ;r1 <-- r0 (num del
+                                                             enemigo) * r2 (dim
+                                                             de reg enemigo) = 
+                                                            offset
+  758 000006A4         
+  759 000006A4 E7D60001 
+                       bc_14   ldrb             r0, [r6, r1] ;r0 <-- enemigo.lo
+                                                            ng
+  760 000006A8         ; Comprobar que la línea no es ocupada
+  761 000006A8 E3500000        cmp              r0, #0      ;if (r0 == 0) --> s
+                                                            kip (la línea esta 
+                                                            vacia)
+  762 000006AC 0A000005        beq              bc_14_end
+
+
+
+ARM Macro Assembler    Page 27 
+
+
+  763 000006B0         ; Si ocupada, linea++ modulo 13 (MAX 14 iteraciones)
+  764 000006B0 E2811008        add              r1, r1, #ENEMY_REG_FIELD ;r1 <-
+                                                            - offset siguiente 
+                                                            enemigo
+  765 000006B4 E3510048        cmp              r1, #ENEMY_REG_SIZE ;if (r1 = #
+                                                            ENEMY_REG_SIZE)
+  766 000006B8 03A01000        moveq            r1, #0      ; r1 <-- 0
+  767 000006BC E2522001        subs             r2, r2, #1  ;r2--
+  768 000006C0 1AFFFFF7        bne              bc_14       ;if (r2 != 0) -->  
+                                                            continue
+  769 000006C4 EA000030        b                skip10      ; NO QUEDAN LINEAS 
+                                                            LIBRES --> SALTAR
+  770 000006C8         
+  771 000006C8         bc_14_end
+  772 000006C8 E0861001        add              r1, r6, r1  ;r1 <-- @enemigo nu
+                                                            evo
+  773 000006CC         
+  774 000006CC         ;ALEATORIO --> Longitud (2 - 10 ! PAR)
+  775 000006CC E24DD004        sub              sp, sp, #4  ;@resul
+  776 000006D0 EBFFFFFE        bl               rand
+  777 000006D4 E49D0004        POP              {r0}        ;r0 <-- numero pseu
+                                                            do aleatorio
+  778 000006D8 E200007F        and              r0, r0, #127 ;r0 <-- enmascarar
+                                                             el último half-wor
+                                                            d
+  779 000006DC E2800001        add              r0, r0, #1  ; asegurar que r0 n
+                                                            o es 0
+  780 000006E0 E1A00080        mov              r0, r0, lsl #1 ;r0 <-- r0 * 2
+  781 000006E4 E350000A        cmp              r0, #ENEMY_MAX ;if (r0 > ENEMY_
+                                                            MAX)
+  782 000006E8 DA000002        ble              bc_15a_end  ; else
+  783 000006EC E240000A 
+                       bc_15a  sub              r0, r0, #ENEMY_MAX 
+                                                            ;r0 - ENEMY_MAX
+  784 000006F0 E350000A        cmp              r0, #ENEMY_MAX ;if (r0 > ENEMY_
+                                                            MAX) --> continue
+  785 000006F4 CAFFFFFC        bgt              bc_15a
+  786 000006F8         bc_15a_end
+  787 000006F8         
+  788 000006F8 E3500002        cmp              r0, #ENEMY_MIN ;if (r0 < ENEMY_
+                                                            MIN)
+  789 000006FC AA000002        bge              bc_15b_end  ; else
+  790 00000700 E2800002 
+                       bc_15b  add              r0, r0, #ENEMY_MIN 
+                                                            ;r0 + ENEMY_MIN
+  791 00000704 E3500002        cmp              r0, #ENEMY_MIN ;if (r0 < ENEMY_
+                                                            MIN) --> continue
+  792 00000708 BAFFFFFC        blt              bc_15b
+  793 0000070C         bc_15b_end
+  794 0000070C         
+  795 0000070C E5C10000        strb             r0, [r1, #0] ;r0 --> enemigo.lo
+                                                            ng
+  796 00000710         
+  797 00000710         ;ALEATORIO --> Dirección (-1 (izq) ó 1 (drch))
+  798 00000710 E24DD004        sub              sp, sp, #4  ;@resul
+  799 00000714 EBFFFFFE        bl               rand
+  800 00000718 E49D0004        POP              {r0}        ;r0 <-- numero pseu
+                                                            do aleatorio
+  801 0000071C E2000001        and              r0, r0, #1  ;r0 <-- enmascarar 
+
+
+
+ARM Macro Assembler    Page 28 
+
+
+                                                            último bit
+  802 00000720 E3500000        cmp              r0, #0      ;if (r0 == 0)
+  803 00000724 02400001        subeq            r0, r0, #1  ; r0 <-- #-1
+  804 00000728 E5C10002        strb             r0, [r1, #2] 
+                                                            ;r0 --> enemigo.dir
+                                                            
+  805 0000072C         
+  806 0000072C         ;ARITMÉTICO --> Posición (0 - SCREEN_C - 1) (!Se ha de m
+                       odificar según dirección)
+  807 0000072C E3700001        cmp              r0, #-1     ;if (r2 (enemigo.di
+                                                            r) == -1 (HACIA LA 
+                                                            IZQ))
+  808 00000730 03A00020        moveq            r0, #SCREEN_C
+  809 00000734         ;DERECHA (dir == 1)
+  810 00000734 15D12000        ldrneb           r2, [r1, #0] ;r2 <-- enemigo.lo
+                                                            ng
+  811 00000738 12620000        rsbne            r0, r2, #0  ;r0 <-- posición oc
+                                                            ulto (-long)
+  812 0000073C E5C10001        strb             r0, [r1, #1] 
+                                                            ;r0 --> enemigo.pos
+                                                            
+  813 00000740         
+  814 00000740         ;ALEATORIO -->  Velocidad (0,01 - 1,28 ! por potencias d
+                       e 2)      
+  815 00000740 E59F24C0        LDR              r2, =ENEMY_SPEED ;r2 <-- @ENEMY
+                                                            _SPEED
+  816 00000744 E5922000        ldr              r2, [r2]    ;r2 <-- ENEMY_SPEED
+                                                            
+  817 00000748         
+  818 00000748 E24DD004        sub              sp, sp, #4  ;@resul
+  819 0000074C EBFFFFFE        bl               rand
+  820 00000750 E49D0004        POP              {r0}        ;r0 <-- numero pseu
+                                                            do aleatorio
+  821 00000754 E2000007        and              r0, r0, #8-1 ;r0 <-- últimos 3 
+                                                            bits del número
+  822 00000758 E3500003        cmp              r0, #3      ;if (r0 <= 3) --> d
+                                                            ividir r0-veces
+  823 0000075C D1A02032        movle            r2, r2, lsr r0 ; r2 <-- nueva v
+                                                            elocidad
+  824 00000760 C2400004        subgt            r0, r0, #4  ; else if (r0 > 3) 
+                                                            --> mutliplicar (r0
+                                                             - 4)-veces
+  825 00000764 C1A02012        movgt            r2, r2, lsl r0 ; r2 <-- nueva v
+                                                            elocidad
+  826 00000768         
+  827 00000768 E3520001        cmp              r2, #ENEMY_QUICK ;if (r2 < ENEM
+                                                            Y_QUICK)
+  828 0000076C B3A02001        movlt            r2, #ENEMY_QUICK ; r2 <-- ENEMY
+                                                            _QUICK
+  829 00000770 E3520080        cmp              r2, #ENEMY_SLOW ;if (r2 > ENEMY
+                                                            _SLOW)
+  830 00000774 C3A02080        movgt            r2, #ENEMY_SLOW 
+                                                            ; r2 <-- ENEMY_SLOW
+                                                            
+  831 00000778         
+  832 00000778 E5C12003        strb             r2, [r1, #3] ;r2 --> enemigo.sp
+                                                            eed 
+  833 0000077C         
+  834 0000077C         ;ARITMÉTICO --> Timer (RELOJ + SPEED)
+
+
+
+ARM Macro Assembler    Page 29 
+
+
+  835 0000077C E59F044C        LDR              r0, =reloj  ;r0 <-- @reloj
+  836 00000780 E5900000        ldr              r0, [r0]    ;r0 <-- reloj
+  837 00000784 E0802002        add              r2, r0, r2  ;r2 <-- nuevo timer
+                                                            
+  838 00000788 E5812004        str              r2, [r1, #4] ;r2 --> enemigo.ti
+                                                            mer 
+  839 0000078C         
+  840 0000078C         skip10
+  841 0000078C E8BD000F        POP              {r0, r1, r2, r3} ;guardar regis
+                                                            tros utilizados
+  842 00000790 E8BD8800        POP              {pc, fp}    ;guardar @PC_retorn
+                                                            o y FP_antiguo
+  843 00000794         
+  844 00000794         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                       ;;;;;;;;;;;;;;;;
+  845 00000794         ;;;; SBR_mover_enemigo           ;;;;
+  846 00000794         ;;;; desplazar el [enemigo] situado en la [fila] de pant
+                       alla  ;;;;
+  847 00000794         ;;;; un paso en la dirección que corresponda      ;;;;
+  848 00000794         ;;;; #8 @param: enemigo --> @puntero a enemigo     ;;;;
+  849 00000794         ;;;; #12 @param: fila --> indice de la fila del enemigo 
+                         ;;;;
+  850 00000794         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                       ;;;;;;;;;;;;;;;;
+  851 00000794         SBR_mover_enemigo
+  852 00000794 E92D4800        PUSH             {lr, fp}    ;guardar @PC_retorn
+                                                            o y FP_antiguo
+  853 00000798 E1A0B00D        mov              fp, sp      ;nuevo fp correspon
+                                                            de con sp actual
+  854 0000079C         
+  855 0000079C E92D003F        PUSH             {r0, r1, r2, r3, r4, r5} ;guard
+                                                            ar registros utiliz
+                                                            ados
+  856 000007A0         
+  857 000007A0 E59B0008        ldr              r0, [fp, #8] ;r0 <-- @puntero d
+                                                            el enemigo
+  858 000007A4 E59B300C        ldr              r3, [fp, #12] ;r3 <-- fila del 
+                                                            enemigo (inicia en 
+                                                            0)
+  859 000007A8 E3A04020        LDR              r4, =SCREEN_C ;r4 <-- numero de
+                                                             columnas por fila
+  860 000007AC E0030394        mul              r3, r4, r3  ;r3 <-- offset hast
+                                                            a fila del enemigo
+  861 000007B0 E0833084        add              r3, r3, r4, lsl #1 ;r3 <-- CONT
+                                                            EMPLAR QUE LA PRIME
+                                                            RA LINEA DE ENEMIGO
+                                                            S ES LA TERCERA
+  862 000007B4 E0883003        add              r3, r8, r3  ;r3 <-- @ inicio de
+                                                             la linea del enemi
+                                                            go
+  863 000007B8         
+  864 000007B8         ; calcular instante siguiente movimiento
+  865 000007B8 E5D01003        ldrb             r1, [r0, #3] ;r1 <-- enemigo.sp
+                                                            eed
+  866 000007BC E5902004        ldr              r2, [r0, #4] ;r2 <-- enemigo.ti
+                                                            mer
+  867 000007C0 E0822001        add              r2, r2, r1  ;r2 <-- nuevo timer
+                                                            
+  868 000007C4 E5802004        str              r2, [r0, #4] ;r2 --> enemigo.ti
+
+
+
+ARM Macro Assembler    Page 30 
+
+
+                                                            mer
+  869 000007C8         
+  870 000007C8         ;borrar elemento anterior
+  871 000007C8         ;calcular nueva posicion (dirx) elemento
+  872 000007C8         ;dibujar nuevo elemento
+  873 000007C8         ;;;;;;;;;;;;;;;;;;;;;;; GUARDA DE ROBUSTEZ ;;;;;;;;;;;;;
+                       ;;;;;;;;;;;;;;
+  874 000007C8 E5D02000        ldrb             r2, [r0]    ;r2 <-- enemigo.lon
+                                                            g
+  875 000007CC E3520000        cmp              r2, #0      ;if (long > 0)
+  876 000007D0 DA000034        ble              enm_end     ; else (long <= 0) 
+                                                            --> skip (no necesa
+                                                            rio mover nada)
+  877 000007D4         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                       ;;;;;;;;;;;;;
+  878 000007D4         
+  879 000007D4 E1D010D2        ldrsb            r1, [r0, #2] ;r1 <-- enemigo.di
+                                                            rx
+  880 000007D8 E3510001        cmp              r1, #1
+  881 000007DC 0A00001B        beq              enm_r       ;if (dirx == 1[dere
+                                                            cha]) --> b enm_r
+  882 000007E0         
+  883 000007E0         ; IZQUIERDA ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  884 000007E0         enm_l
+  885 000007E0 E1D010D1        ldrsb            r1, [r0, #1] ;r1 <-- enemigo.po
+                                                            sx
+  886 000007E4 E3510000 
+                       bc_04   cmp              r1, #0      ;if (pos > 0)
+  887 000007E8 DA000008        ble              skip02      ; else --> skip02
+  888 000007EC E3510020        cmp              r1, #SCREEN_C ;if (pos < SCREEN
+                                                            _C)
+  889 000007F0 AA00000B        bge              skip03      ; else --> skip03
+  890 000007F4 E7D34001        ldrb             r4, [r3, r1] ;r4 <-- caracter d
+                                                            e representación de
+                                                            l enemigo en (pos)
+  891 000007F8 E2411001        sub              r1, r1, #1  ;r1-- (desplazar a 
+                                                            la izquierda)
+  892 000007FC E7C34001        strb             r4, [r3, r1] ;desplazar
+  893 00000800 E2811002        add              r1, r1, #2  ;siguiente posición
+                                                             de la linea del en
+                                                            emigo
+  894 00000804 E2522001        subs             r2, r2, #1  ;caracteres_restant
+                                                            es--
+  895 00000808 1AFFFFF5        bne              bc_04       ;if (caracteres_res
+                                                            tantes > 0)
+  896 0000080C EA00000B        b                bc_04_end   ; else
+  897 00000810         
+  898 00000810 E0922001 
+                       skip02  adds             r2, r2, r1  ;r2 <-- caracteres 
+                                                            restantes una vez l
+                                                            legada a la posició
+                                                            n 1 de pantalla
+  899 00000814 E3A01001        mov              r1, #1      ;r1 <-- 1 (posicion
+                                                             1 de la pantalla)
+  900 00000818 E2522001        subs             r2, r2, #1  ;caracteres_restant
+                                                            es--
+  901 0000081C 1AFFFFF0        bne              bc_04       ;if (caracteres_res
+                                                            tantes > 0)
+
+
+
+ARM Macro Assembler    Page 31 
+
+
+  902 00000820 EA000006        b                bc_04_end   ; else
+  903 00000824         
+  904 00000824 E5D04000 
+                       skip03  ldrb             r4, [r0]    ;r4 <-- enemigo.lon
+                                                            g
+  905 00000828 E15200A4        cmp              r2, r4, lsr #1 ;r2 (número de c
+                                                            aracteres restantes
+                                                             por mostrar)
+  906 0000082C         ;r4 lsl 1 (primer carácter perteneciente a la zona derec
+                       ha)
+  907 0000082C         ;if (r2 <= r4) --> EL CARACTER ES DERECHO
+  908 0000082C D3A0403E        movle            r4, #CHAR_ENEMY_R ;r4 <-- carac
+                                                            ter de representaci
+                                                            ón del enemigo en (
+                                                            pos)
+  909 00000830         ; else (ES IZQUIERDO)
+  910 00000830 C3A0403C        movgt            r4, #CHAR_ENEMY_L ;r4 <-- carac
+                                                            ter de representaci
+                                                            ón del enemigo en (
+                                                            pos)
+  911 00000834 E2411001        sub              r1, r1, #1  ;r1-- (desplazar a 
+                                                            la izquierda)
+  912 00000838 E7C34001        strb             r4, [r3, r1] ;desplazar
+  913 0000083C         ;no es necesaria ninguna acción mas
+  914 0000083C EA000019        b                enm_end
+  915 00000840         
+  916 00000840         bc_04_end
+  917 00000840 E3A04020        mov              r4, #CHAR_CLEAR 
+                                                            ;r4 <-- #CHAR_CLEAR
+                                                            
+  918 00000844 E2411001        sub              r1, r1, #1  ;r1 <-- posición má
+                                                            s a la derecha del 
+                                                            enemigo (debe ser b
+                                                            orrada)
+  919 00000848 E7C34001        strb             r4, [r3, r1] ; BORRAR
+  920 0000084C EA000015        b                enm_end
+  921 00000850         ; DERECHA ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  922 00000850         enm_r
+  923 00000850 E1D010D1        ldrsb            r1, [r0, #1] ;r1 <-- enemigo.po
+                                                            sx
+  924 00000854 E3510000        cmp              r1, #0      ;if (pos >= 0)
+  925 00000858 BA000009        blt              skip04      ; else --> skip04
+  926 0000085C         
+  927 0000085C E3A05020        mov              r5, #CHAR_CLEAR ;r5 <-- ' ' <->
+                                                             #CHAR_CLEAR (carac
+                                                            ter anterior)
+  928 00000860         
+  929 00000860 E3510020 
+                       bc_05   cmp              r1, #SCREEN_C ;if (pos < SCREEN
+                                                            _C)
+  930 00000864 AA00000F        bge              enm_end     ; else --> skip
+  931 00000868 E7D34001        ldrb             r4, [r3, r1] ;r4 <-- caracter d
+                                                            e representación de
+                                                            l enemigo en (pos)
+  932 0000086C E7C35001        strb             r5, [r3, r1] ;desplazar
+  933 00000870 E1A05004        mov              r5, r4
+  934 00000874 E2811001        add              r1, r1, #1  ;r1++ (desplazar a 
+                                                            la derecha)
+
+
+
+ARM Macro Assembler    Page 32 
+
+
+  935 00000878 E2522001        subs             r2, r2, #1  ;caracteres_restant
+                                                            es--
+  936 0000087C 1AFFFFF7        bne              bc_05       ;if (caracteres_res
+                                                            tantes != 0)
+  937 00000880 EA000006        b                bc_05_end   ; else
+  938 00000884         
+  939 00000884 E5D04000 
+                       skip04  ldrb             r4, [r0]    ;r4 <-- enemigo.lon
+                                                            g
+  940 00000888 E0821001        add              r1, r2, r1  ;r1 <-- (numero de 
+                                                            caracteres YA mostr
+                                                            ados)
+  941 0000088C E15100A4        cmp              r1, r4, lsr #1 ;r4 lsr 1 (ultim
+                                                            o carácter pertenec
+                                                            iente a la zona der
+                                                            echa)
+  942 00000890         ;if (r2 >= r4) --> EL CARACTER ES IZQUIERDO
+  943 00000890 A3A0503C        movge            r5, #CHAR_ENEMY_L ;r4 <-- carac
+                                                            ter de representaci
+                                                            ón del enemigo en (
+                                                            pos)
+  944 00000894         ; else (ES DERECHO)
+  945 00000894 B3A0503E        movlt            r5, #CHAR_ENEMY_R ;r4 <-- carac
+                                                            ter de representaci
+                                                            ón del enemigo en (
+                                                            pos)
+  946 00000898 E0211001        eor              r1, r1, r1  ;r1 <-- 0 (comienzo
+                                                             de la linea de pan
+                                                            talla)
+  947 0000089C EAFFFFEF        b                bc_05       ;if (caracteres_res
+                                                            tantes != 0)
+  948 000008A0         
+  949 000008A0         
+  950 000008A0         bc_05_end
+  951 000008A0 E3510020        cmp              r1, #SCREEN_C ;SÓLO ESCRIBIR SI
+                                                             SIGUE SIENDO LA MI
+                                                            SMA LÍNEA
+  952 000008A4 B7C35001        strltb           r5, [r3, r1] ; Ultimo caracter
+  953 000008A8         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                       ;;;;;;;;
+  954 000008A8         
+  955 000008A8         
+  956 000008A8         enm_end
+  957 000008A8         
+  958 000008A8         ; calcular nueva posicion (dirx) elemento
+  959 000008A8 E1D010D1        ldrsb            r1, [r0, #1] ;r1 <-- enemigo.po
+                                                            sx
+  960 000008AC E1D020D2        ldrsb            r2, [r0, #2] ;r2 <-- enemigo.di
+                                                            rx
+  961 000008B0 E0811002        add              r1, r1, r2  ;r1 <-- nueva posic
+                                                            ión
+  962 000008B4         ; and r1, r1, #(1<<8)-1 ;r1 <-- enmascarar a byte
+  963 000008B4         
+  964 000008B4 E3520001        cmp              r2, #1      ;if(r2 == 1) <-> en
+                                                            emigo HACIA DERECHA
+                                                            
+  965 000008B8 E5D02000        ldrb             r2, [r0]    ;r2 <-- enemigo.lon
+                                                            g
+  966 000008BC E0233003        eor              r3, r3, r3  ;r3 <-- 0
+
+
+
+ARM Macro Assembler    Page 33 
+
+
+  967 000008C0 0A000002        beq              del_r       ;b DERECHA
+  968 000008C4         del_l
+  969 000008C4         ;comprobar desaparición por la izquierda
+  970 000008C4 E0922001        adds             r2, r2, r1  ;r2 <-- (long + pos
+                                                            icion)
+  971 000008C8 05C03000        streqb           r3, [r0]    ;if (long = -posici
+                                                            ón) --> ELIMINAR EN
+                                                            EMIGO
+  972 000008CC EA000001        b                del_end
+  973 000008D0         
+  974 000008D0         del_r                                ;comprobar desapari
+                                                            ción por la derecha
+                                                            
+  975 000008D0 E3510020        cmp              r1, #SCREEN_C ;if (posx >= C)
+  976 000008D4 A5C03000        strgeb           r3, [r0]    ;r3 --> enemigo.lon
+                                                            g
+  977 000008D8         
+  978 000008D8 E5C01001 
+                       del_end strb             r1, [r0, #1] ;r1 --> enemigo.po
+                                                            sx
+  979 000008DC         
+  980 000008DC E8BD003F        POP              {r0, r1, r2, r3, r4, r5} ;guard
+                                                            ar registros utiliz
+                                                            ados
+  981 000008E0 E8BD8800        POP              {pc, fp}    ;guardar @PC_retorn
+                                                            o y FP_antiguo
+  982 000008E4         
+  983 000008E4         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                       ;;;;;;;;;;;;;;;;
+  984 000008E4         ;;;; SBR_mover_balas            ;;;;
+  985 000008E4         ;;;; desplazar la matrix de balas de la pantalla un paso
+                        hacia ;;;;
+  986 000008E4         ;;;; arriba. Detecta impactos contra enemigos.     ;;;;
+  987 000008E4         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                       ;;;;;;;;;;;;;;;;
+  988 000008E4         SBR_mover_balas
+  989 000008E4 E92D4800        PUSH             {lr, fp}    ;salvar PC_retorno 
+                                                            y FP_antiguo
+  990 000008E8 E1A0B00D        mov              fp, sp      ;nuevo fp
+  991 000008EC         
+  992 000008EC E92D001F        PUSH             {r0, r1, r2, r3, r4} ;salvar re
+                                                            gistros utilizados
+  993 000008F0         
+  994 000008F0         ;;;;;;;;;;;;;;;;;;;;;;;;;;;; GAME OVER ;;;;;;;;;;;;;;;;;
+                       ;;;;;;;
+  995 000008F0 E59F030C        LDR              r0, =bullet_count ;r0 <-- @bull
+                                                            et_count
+  996 000008F4 E5900000        ldr              r0, [r0]    ;r0 <-- bullet_coun
+                                                            t
+  997 000008F8 E3500000        cmp              r0, #0      ;if(r0 == 0)
+  998 000008FC 0A000003        beq              no_bullets
+  999 00000900         ;hay balas
+ 1000 00000900 E59F0310        LDR              r0, =bullets_over ;r0 <-- @bull
+                                                            ets_over
+ 1001 00000904 E0211001        eor              r1, r1, r1  ;r1 <-- 0 
+ 1002 00000908 E5801000        str              r1, [r0]    ;r1 --> bullets_ove
+                                                            r
+ 1003 0000090C EA000008        b                bullets_end
+ 1004 00000910         
+
+
+
+ARM Macro Assembler    Page 34 
+
+
+ 1005 00000910         no_bullets
+ 1006 00000910         ;no hay balas
+ 1007 00000910 E59F0300        LDR              r0, =bullets_over ;r0 <-- @bull
+                                                            ets_over
+ 1008 00000914 E5901000        ldr              r1, [r0]    ;r1 <-- bullets_ove
+                                                            r
+ 1009 00000918 E2811001        add              r1, r1, #1  ;r1++
+ 1010 0000091C E5801000        str              r1, [r0]    ;r1 --> bullets_ove
+                                                            r
+ 1011 00000920 E351000E        cmp              r1, #SCREEN_R - 2 ;if (r1 >= SC
+                                                            REEN_R-2)
+ 1012 00000924 BA000002        blt              bullets_end ; else
+ 1013 00000928 E3A00001        mov              r0, #1      ;r0 <-- 1
+ 1014 0000092C E59F12A8        LDR              r1, =fin    ;r1 <-- @fin
+ 1015 00000930 E5810000        str              r0, [r1]    ;r1 --> @fin (fin d
+                                                            el programa)
+ 1016 00000934         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                       ;;;;;;;
+ 1017 00000934         bullets_end
+ 1018 00000934         
+ 1019 00000934 E3A01020        mov              r1, #SCREEN_C ;r1 <-- numero de
+                                                             celdas por fila
+ 1020 00000938 E0880001        add              r0, r8, r1  ;r0 <-- @ primera c
+                                                            alda de segunda fil
+                                                            a
+ 1021 0000093C         
+ 1022 0000093C         ;for (r1 = SCREEN_C, r1 > 0, r1--)
+ 1023 0000093C E3510000        cmp              r1, #0
+ 1024 00000940 DA000005        ble              bc_08_end
+ 1025 00000944         ;SEGUNDA FILA -->  Solo borrar balas
+ 1026 00000944 E4D02001 
+                       bc_08   ldrb             r2, [r0], #1 ;r2 <-- byte de la
+                                                             linea
+ 1027 00000948         ;r0++
+ 1028 00000948 E352002A        cmp              r2, #CHAR_BULLET ;if (r2 == CHA
+                                                            R_BULLET){
+ 1029 0000094C 03A02020        moveq            r2, #CHAR_CLEAR 
+                                                            ;r2 <-- #CHAR_CLEAR
+                                                            
+ 1030 00000950 05402001        streqb           r2, [r0, #-1] ;r2 --> 0 --> byt
+                                                            e de bala (borrar b
+                                                            ala)
+ 1031 00000954 E2511001        subs             r1, r1, #1  ;r1--
+ 1032 00000958 1AFFFFF9        bne              bc_08
+ 1033 0000095C         bc_08_end
+ 1034 0000095C         ;FILAS 3 <-> PENÚLTIMA --> Mover balas. Comprobar enemig
+                       os
+ 1035 0000095C E3A01000        mov              r1, #0      ;r1 <-- 0
+ 1036 00000960         ;for (r1 = 0, r1 < (SREEN_R - 3), r1++){
+ 1037 00000960 E351000D 
+                       bc_06   cmp              r1, #(SCREEN_R - 3)
+ 1038 00000964 AA000014        bge              bc_06_end
+ 1039 00000968 E0222002        eor              r2, r2, r2  ;r2 <-- 0
+ 1040 0000096C         ;for (r2 = 0, r2 < SCREEN_C, r2++){
+ 1041 0000096C E3520020 
+                       bc_07   cmp              r2, #SCREEN_C
+ 1042 00000970 AA00000F        bge              bc_07_end
+ 1043 00000974 E5D03000        ldrb             r3, [r0]    ;r3 <-- byte de bal
+                                                            a (leer siguiente b
+
+
+
+ARM Macro Assembler    Page 35 
+
+
+                                                            yte)
+ 1044 00000978 E353002A        cmp              r3, #CHAR_BULLET ;if (pixel == 
+                                                            CHAR_BULLET){
+ 1045 0000097C 1A000009        bne              skip06      ; else
+ 1046 00000980 E5504020        ldrb             r4, [r0, #(-SCREEN_C)] ;r4 <-- 
+                                                            pixel de destino
+ 1047 00000984 E3540020        cmp              r4, #CHAR_CLEAR ;if (r4 == CHAR
+                                                            _CLEAR )   NO POSIB
+                                                            LE -->  || r4 == CH
+                                                            AR_BULLET){
+ 1048 00000988 0A000003        beq              not_found   ; b not_found (no s
+                                                            e ha alcanzado enem
+                                                            igo)
+ 1049 0000098C         ;cmp r4, #CHAR_BULLET   
+ 1050 0000098C         ;beq not_found
+ 1051 0000098C         found
+ 1052 0000098C E52D1004        PUSH             {r1}        ;r1 (enemigo) --> #
+                                                            8 @param
+ 1053 00000990 EB00000B        bl               SBR_enemigo_derrotado
+ 1054 00000994 E28DD004        add              sp, sp, #4
+ 1055 00000998 E3A03020        mov              r3, #CHAR_CLEAR ;r3 <-- CHAR_CL
+                                                            EAR (eliminar bala)
+                                                            
+ 1056 0000099C         not_found
+ 1057 0000099C E5403020        strb             r3, [r0, #(-SCREEN_C)] ;r3 --> 
+                                                            move pixel (tenaga 
+                                                            bala o no - al alca
+                                                            nzar obj. la bala d
+                                                            esaparece)
+ 1058 000009A0 E3A03020        mov              r3, #CHAR_CLEAR 
+                                                            ;r3 <-- #CHAR_CLEAR
+                                                            
+ 1059 000009A4 E5C03000        strb             r3, [r0]    ;r3 --> limpiar ant
+                                                            erior   
+ 1060 000009A8         
+ 1061 000009A8 E2822001 
+                       skip06  add              r2, r2, #1  ;r2++
+ 1062 000009AC E2800001        add              r0, r0, #1  ;r0++
+ 1063 000009B0 EAFFFFED        b                bc_07
+ 1064 000009B4         bc_07_end
+ 1065 000009B4 E2811001        add              r1, r1, #1  ;r1++
+ 1066 000009B8 EAFFFFE8        b                bc_06
+ 1067 000009BC         bc_06_end
+ 1068 000009BC E8BD001F        POP              {r0, r1, r2, r3, r4} ;guardar r
+                                                            egistros utilizados
+                                                            
+ 1069 000009C0 E8BD8800        POP              {pc, fp}    ;guardar @PC_retorn
+                                                            o y FP_antiguo
+ 1070 000009C4         
+ 1071 000009C4         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                       ;;;;;;;;;;;;;;;;
+ 1072 000009C4         ;;;; SBR_enemigo_dorratado          ;;;;
+ 1073 000009C4         ;;;; elimina al [enemigo] derrotado. Lo borra de pantall
+                       a. Y  ;;;;
+ 1074 000009C4         ;;;; suma la puntuación correspondiente (score y count) 
+                         ;;;;
+ 1075 000009C4         ;;;; #8 @param: enemigo --> indice (0-) de enemigo en ve
+                       ctor   ;;;;
+ 1076 000009C4         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+ARM Macro Assembler    Page 36 
+
+
+                       ;;;;;;;;;;;;;;;;
+ 1077 000009C4         SBR_enemigo_derrotado
+ 1078 000009C4 E92D4800        PUSH             {lr, fp}    ;salvar PC_retorno 
+                                                            y FP_antiguo
+ 1079 000009C8 E1A0B00D        mov              fp, sp      ;nuevo fp
+ 1080 000009CC         
+ 1081 000009CC E92D000F        PUSH             {r0, r1, r2, r3} ;salvar regist
+                                                            ros utilizados
+ 1082 000009D0         
+ 1083 000009D0 E59B0008        ldr              r0, [fp, #8] ;r0 <-- indice de 
+                                                            nemigo derrotado
+ 1084 000009D4 E2400001        sub              r0, r0, #1
+ 1085 000009D8 E3A02008        LDR              r2, =ENEMY_REG_FIELD ;r2 <-- ca
+                                                            mpos del registro
+ 1086 000009DC E0020290        mul              r2, r0, r2  ;r2 <-- offset a en
+                                                            emigo
+ 1087 000009E0 E0861002        add              r1, r6, r2  ;r1 <-- @enemigo de
+                                                            rrotado
+ 1088 000009E4         
+ 1089 000009E4         ;borrar enemigo de la pantalla
+ 1090 000009E4 E3A03020        LDR              r3, =SCREEN_C ;r3 <-- columnas 
+                                                            por linea
+ 1091 000009E8 E0882083        add              r2, r8, r3, lsl #1 ;r2 <-- @ini
+                                                            cio TERCERA linea
+ 1092 000009EC E0030390        mul              r3, r0, r3  ;r3 <-- offset hast
+                                                            a linea de enemigo
+ 1093 000009F0 E0822003        add              r2, r2, r3  ;r2 <-- @linea del 
+                                                            enemigo
+ 1094 000009F4 E1D130D1        ldrsb            r3, [r1, #1] ;r3 <-- enemigo.po
+                                                            sx
+ 1095 000009F8 E0823003        add              r3, r2, r3  ;r3 <-- @en pantall
+                                                            a del enemigo
+ 1096 000009FC E5D12000        ldrb             r2, [r1]    ;r2 <-- enemigo.lon
+                                                            g
+ 1097 00000A00 E3520000        cmp              r2, #0      ;while (r2 != 0) ó 
+                                                            (caracteres restant
+                                                            es != 0)
+ 1098 00000A04         ; == for(r2 = LONG; r2 > 0; r2--)
+ 1099 00000A04 0A000003        beq              bc_09_end
+ 1100 00000A08 E3A00020        mov              r0, #CHAR_CLEAR 
+                                                            ;r0 <-- #CHAR_CLEAR
+                                                            
+ 1101 00000A0C E4C30001 
+                       bc_09   strb             r0, [r3], #1 ;borrar pixel del 
+                                                            enemigo
+ 1102 00000A10 E2522001        subs             r2, r2, #1  ;r2--
+ 1103 00000A14 1AFFFFFC        bne              bc_09
+ 1104 00000A18         bc_09_end
+ 1105 00000A18         
+ 1106 00000A18         ;actualizar puntuación
+ 1107 00000A18 E5D12000        ldrb             r2, [r1]    ;r2 <-- enemigo.lon
+                                                            g
+ 1108 00000A1C E3A0300C        LDR              r3, =(ENEMY_MAX+2) ;r3 <-- max 
+                                                            longitud de un enem
+                                                            igo + 2
+ 1109 00000A20 E0432002        sub              r2, r3, r2  ;r2 <-- puntuación 
+                                                            que otorga el enemi
+                                                            go
+ 1110 00000A24 E59F31F0        LDR              r3, =score  ;r3 <-- @score
+
+
+
+ARM Macro Assembler    Page 37 
+
+
+ 1111 00000A28 E5930000        ldr              r0, [r3]    ;r0 <-- puntuación 
+                                                            acumulada
+ 1112 00000A2C E0800002        add              r0, r0, r2  ;r2 <-- nueva ""
+ 1113 00000A30 E5830000        str              r0, [r3]
+ 1114 00000A34         
+ 1115 00000A34 E59F0184        LDR              r0, =score_d1 ;r0 <-- @buffer d
+                                                            e puntuación
+ 1116 00000A38 E92D0005        PUSH             {r0, r2}    ;r0 (cuenta) --> #8
+                                                             @param
+ 1117 00000A3C         ;r2 (puntuacion) --> #12 @param
+ 1118 00000A3C EB000019        bl               SBR_sumar_marcador
+ 1119 00000A40 E28DD008        add              sp, sp, #8
+ 1120 00000A44         
+ 1121 00000A44 E2882001        add              r2, r8, #1  ;r2 <-- @contador d
+                                                            e puntuación 
+ 1122 00000A48 E52D0004        PUSH             {r0}        ;r0 (numero) --> #1
+                                                            2 @param
+ 1123 00000A4C E52D2004        PUSH             {r2}        ;r2 (contador) --> 
+                                                            #8 @param 
+ 1124 00000A50 EBFFFEF0        bl               SBR_actualizar_contador
+ 1125 00000A54 E28DD008        add              sp, sp, #8
+ 1126 00000A58         
+ 1127 00000A58         ;eliminar enemigo de vector
+ 1128 00000A58 E0222002        eor              r2, r2, r2  ;r2 <-- 0
+ 1129 00000A5C E5C12000        strb             r2, [r1]    ;r2 --> enemigo.lon
+                                                            g
+ 1130 00000A60         
+ 1131 00000A60         ;sumar enemigo derrotado al contador
+ 1132 00000A60 E59F017C        LDR              r0, =enemy_count ;r0 <-- @enemi
+                                                            gos restantes
+ 1133 00000A64 E5901000        ldr              r1, [r0]    ;r1 <-- enemigos re
+                                                            stantes
+ 1134 00000A68 E2511001        subs             r1, r1, #1  ;r1--
+ 1135 00000A6C E5801000        str              r1, [r0]    ;r1 --> (@enemigos 
+                                                            restantes)
+ 1136 00000A70 E59F0164        LDR              r0, =fin    ;r0 <-- @ fin
+ 1137 00000A74 03A01001        moveq            r1, #1      ;r1 <-- ¿fin progra
+                                                            ma? (1 = si)
+ 1138 00000A78 05801000        streq            r1, [r0]    ;FIN DEL PROGRAMA
+ 1139 00000A7C         
+ 1140 00000A7C         ;aumentar una bala
+ 1141 00000A7C E59F3180        LDR              r3, =bullet_count
+ 1142 00000A80 E5932000        ldr              r2, [r3]    ;r2 <-- num de bala
+                                                             actual
+ 1143 00000A84 E2822001        add              r2, r2, #1  ;r2++
+ 1144 00000A88 E5832000        str              r2, [r3]    ;r2 --> bullet_coun
+                                                            t (actualizar numer
+                                                            o de balas)
+ 1145 00000A8C         
+ 1146 00000A8C         ;actualizar marcador de balas restantes
+ 1147 00000A8C E288101B        add              r1, r8, #(SCREEN_C - 5) ;r1 <--
+                                                             direcceción de ini
+                                                            cio del contador de
+                                                             balas
+ 1148 00000A90 E3A02001        mov              r2, #1      ;r2 <-- 1
+ 1149 00000A94 E92D0006        PUSH             {r1, r2}    ;r1 (cuenta) --> #8
+                                                             @param
+ 1150 00000A98         ;r2 (puntuacion) --> #12 @param
+ 1151 00000A98 EB000002        bl               SBR_sumar_marcador
+
+
+
+ARM Macro Assembler    Page 38 
+
+
+ 1152 00000A9C E28DD008        add              sp, sp, #8
+ 1153 00000AA0         
+ 1154 00000AA0 E8BD000F        POP              {r0, r1, r2, r3} ;guardar regis
+                                                            tros utilizados
+ 1155 00000AA4 E8BD8800        POP              {pc, fp}    ;guardar @PC_retorn
+                                                            o y FP_antiguo
+ 1156 00000AA8         
+ 1157 00000AA8         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                       ;;;;;;;;;;;;;;;;
+ 1158 00000AA8         ;;;; SBR_sumar_marcador           ;;;;
+ 1159 00000AA8         ;;;; actualiza el buffer de la [cuenta] añadiendo la nue
+                       va  ;;;;
+ 1160 00000AA8         ;;;; [puntuacion] obtenida           ;;;;
+ 1161 00000AA8         ;;;; #8 @param: cuenta --> buffer de caracteres ASCII   
+                       ;;;;
+ 1162 00000AA8         ;;;; #12 @param: puntuacion --> nueva puntuación a consi
+                       derar   ;;;;
+ 1163 00000AA8         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                       ;;;;;;;;;;;;;;;;
+ 1164 00000AA8         SBR_sumar_marcador
+ 1165 00000AA8 E92D4800        PUSH             {lr, fp}    ;salvar PC_retorno 
+                                                            y FP_antiguo
+ 1166 00000AAC E1A0B00D        mov              fp, sp      ;nuevo fp
+ 1167 00000AB0         
+ 1168 00000AB0 E92D0007        PUSH             {r0, r1, r2} ;salvar registros 
+                                                            utilizados
+ 1169 00000AB4         
+ 1170 00000AB4 E59B0008        ldr              r0, [fp, #8] ;r0 <-- @buffer de
+                                                             puntuación
+ 1171 00000AB8 E59B100C        ldr              r1, [fp, #12] ;r1 <-- puntuació
+                                                            n a considerar
+ 1172 00000ABC         
+ 1173 00000ABC E3510FFA 
+                       bc_10   cmp              r1, #1000   ;MILLARES
+ 1174 00000AC0 A2411FFA        subge            r1, r1, #1000 ;r1 - 1000
+ 1175 00000AC4 AA000009        bge              dig1
+ 1176 00000AC8 E3510064        cmp              r1, #100    ;CENTENAS
+ 1177 00000ACC A2411064        subge            r1, r1, #100 ;r1 - 100
+ 1178 00000AD0 AA00000B        bge              dig2
+ 1179 00000AD4 E351000A        cmp              r1, #10     ;DECENAS
+ 1180 00000AD8 A241100A        subge            r1, r1, #10 ;r1 - 10
+ 1181 00000ADC AA00000F        bge              dig3
+ 1182 00000AE0 E3510001        cmp              r1, #1      ;UNIDADES
+ 1183 00000AE4 A2411001        subge            r1, r1, #1  ;r1 - 1
+ 1184 00000AE8 AA000013        bge              dig4
+ 1185 00000AEC EA000019        b                bc_10_end
+ 1186 00000AF0         
+ 1187 00000AF0         
+ 1188 00000AF0 E5D02000 
+                       dig1    ldrb             r2, [r0]    ;r2 <-- dig1
+ 1189 00000AF4 E3520039        cmp              r2, #'9'    ;if (dig1 = '9'){
+ 1190 00000AF8 12822001        addne            r2, r2, #1  ; else
+ 1191 00000AFC 15C02000        strneb           r2, [r0]    ;actualizar digito
+ 1192 00000B00 EAFFFFED        b                bc_10
+ 1193 00000B04         
+ 1194 00000B04 E5D02001 
+                       dig2    ldrb             r2, [r0, #1] ;r2 <-- dig2
+ 1195 00000B08 E3520039        cmp              r2, #'9'    ;if (dig2 = '9'){
+ 1196 00000B0C 03A02030        moveq            r2, #'0'    ; dig2 = '0'
+
+
+
+ARM Macro Assembler    Page 39 
+
+
+ 1197 00000B10 12822001        addne            r2, r2, #1  ;else
+ 1198 00000B14 E5C02001        strb             r2, [r0, #1] ;actualizar digito
+                                                            
+ 1199 00000B18 0AFFFFF4        beq              dig1        ;añadir MILLAR si e
+                                                            s necesario  
+ 1200 00000B1C EAFFFFE6        b                bc_10
+ 1201 00000B20         
+ 1202 00000B20 E5D02002 
+                       dig3    ldrb             r2, [r0, #2] ;r2 <-- dig3
+ 1203 00000B24 E3520039        cmp              r2, #'9'    ;if (dig3 = '9'){
+ 1204 00000B28 03A02030        moveq            r2, #'0'    ; dig3 = '0'
+ 1205 00000B2C 12822001        addne            r2, r2, #1  ;else
+ 1206 00000B30 E5C02002        strb             r2, [r0, #2] ;actualizar digito
+                                                            
+ 1207 00000B34 0AFFFFF2        beq              dig2        ;añadir CENTENA si 
+                                                            es necesario  
+ 1208 00000B38 EAFFFFDF        b                bc_10
+ 1209 00000B3C         
+ 1210 00000B3C E5D02003 
+                       dig4    ldrb             r2, [r0, #3] ;r2 <-- dig4
+ 1211 00000B40 E3520039        cmp              r2, #'9'    ;if (dig4 = '9'){
+ 1212 00000B44 03A02030        moveq            r2, #'0'    ; dig4 = '0'
+ 1213 00000B48 12822001        addne            r2, r2, #1  ;else
+ 1214 00000B4C E5C02003        strb             r2, [r0, #3] ;actualizar digito
+                                                            
+ 1215 00000B50 0AFFFFF2        beq              dig3        ;añadir DECENA si e
+                                                            s necesario  
+ 1216 00000B54 EAFFFFD8        b                bc_10
+ 1217 00000B58         
+ 1218 00000B58         bc_10_end
+ 1219 00000B58         
+ 1220 00000B58 E8BD0007        POP              {r0, r1, r2} ;guardar registros
+                                                             utilizados
+ 1221 00000B5C E8BD8800        POP              {pc, fp}    ;guardar @PC_retorn
+                                                            o y FP_antiguo
+ 1222 00000B60         
+ 1223 00000B60         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                       ;;;;;;;;;;;;;;;;
+ 1224 00000B60         ;;;; SBR_restar_marcador           ;;;;
+ 1225 00000B60         ;;;; actualiza el buffer de la [cuenta] decrementando en
+                        uno  ;;;;
+ 1226 00000B60         ;;;; el numero representado          ;;;;
+ 1227 00000B60         ;;;; #8 @param: cuenta --> buffer de caracteres ASCII   
+                       ;;;;
+ 1228 00000B60         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                       ;;;;;;;;;;;;;;;;
+ 1229 00000B60         SBR_restar_marcador
+ 1230 00000B60 E92D4800        PUSH             {lr, fp}    ;salvar PC_retorno 
+                                                            y FP_antiguo
+ 1231 00000B64 E1A0B00D        mov              fp, sp      ;nuevo fp
+ 1232 00000B68         
+ 1233 00000B68 E92D0007        PUSH             {r0, r1, r2} ;salvar registros 
+                                                            utilizados
+ 1234 00000B6C E59B0008        ldr              r0, [fp, #8] ;r0 <-- @marcador 
+                                                            de puntuación
+ 1235 00000B70         
+ 1236 00000B70 E3A01003        mov              r1, #3      ;r1 <-- 3
+ 1237 00000B74 E3510000 
+                       bc_13   cmp              r1, #0
+
+
+
+ARM Macro Assembler    Page 40 
+
+
+ 1238 00000B78 BA000006        blt              bc_13_end
+ 1239 00000B7C E7D02001        ldrb             r2, [r0, r1] ;r2 <-- dig
+ 1240 00000B80 E3520030        cmp              r2, #'0'    ;if (dig = '0'){
+ 1241 00000B84 03A02039        moveq            r2, #'9'    ; dig = '9'
+ 1242 00000B88 12422001        subne            r2, r2, #1  ;else --> r2--
+ 1243 00000B8C E7C02001        strb             r2, [r0, r1] ;   --> actualizar
+                                                             digito
+ 1244 00000B90 E2411001        sub              r1, r1, #1  ;r1--
+ 1245 00000B94 0AFFFFF6        beq              bc_13       ;NECESARIO decremen
+                                                            tar SIGUIENTE DIGIT
+                                                            O  
+ 1246 00000B98         
+ 1247 00000B98         bc_13_end
+ 1248 00000B98 E8BD0007        POP              {r0, r1, r2} ;guardar registros
+                                                             utilizados
+ 1249 00000B9C E8BD8800        POP              {pc, fp}    ;guardar @PC_retorn
+                                                            o y FP_antiguo
+ 1250 00000BA0         
+ 1251 00000BA0                 END
+              FFFFF100 
+              00000000 
+              00000000 
+              FFFFF010 
+              40007E00 
+              00000000 
+              00000000 
+              00000000 
+              00000000 
+              00000000 
+              00000000 
+              00000000 
+              00000000 
+              00000000 
+              00000000 
+              00000000 
+              FFFFF014 
+              00000000 
+              00000000 
+              00000000 
+              00000000 
+              00000000 
+              E0004000 
+              FFFFF030 
+              E0010000 
+              00000000 
+              00000000 
+              40007E0D 
+              00000000 
+              00000000 
+              00000000 
+              00000000 
+Command Line: --debug --xref --apcs=interwork --depend=prac5.d -oprac5.o -IC:\K
+eil\ARM\INC -IC:\Keil\ARM\INC\Philips --predefine="__EVAL SETA 1" --list=prac5.
+lst prac5.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+ASCII 00000008
+
+Symbol: ASCII
+   Definitions
+      At line 24 in file prac5.s
+   Uses
+      At line 153 in file prac5.s
+      At line 216 in file prac5.s
+      At line 402 in file prac5.s
+      At line 431 in file prac5.s
+      At line 627 in file prac5.s
+
+BULLET_SPEED 000002D8
+
+Symbol: BULLET_SPEED
+   Definitions
+      At line 55 in file prac5.s
+   Uses
+      At line 268 in file prac5.s
+      At line 548 in file prac5.s
+      At line 556 in file prac5.s
+
+ENEMY_REG 000002FC
+
+Symbol: ENEMY_REG
+   Definitions
+      At line 90 in file prac5.s
+   Uses
+      At line 204 in file prac5.s
+Comment: ENEMY_REG used once
+ENEMY_SPEED 000002F4
+
+Symbol: ENEMY_SPEED
+   Definitions
+      At line 82 in file prac5.s
+   Uses
+      At line 564 in file prac5.s
+      At line 586 in file prac5.s
+      At line 815 in file prac5.s
+
+SCREEN_GAMEOVER 0000000C
+
+Symbol: SCREEN_GAMEOVER
+   Definitions
+      At line 31 in file prac5.s
+   Uses
+      At line 312 in file prac5.s
+Comment: SCREEN_GAMEOVER used once
+SCREEN_GAMEOVER_END 0000014C
+
+Symbol: SCREEN_GAMEOVER_END
+   Definitions
+      At line 32 in file prac5.s
+   Uses
+      At line 313 in file prac5.s
+Comment: SCREEN_GAMEOVER_END used once
+SCREEN_PAUSE 000002CE
+
+Symbol: SCREEN_PAUSE
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+Relocatable symbols
+
+   Definitions
+      At line 37 in file prac5.s
+   Uses
+      At line 617 in file prac5.s
+      At line 641 in file prac5.s
+
+SCREEN_PAUSE_END 000002D4
+
+Symbol: SCREEN_PAUSE_END
+   Definitions
+      At line 38 in file prac5.s
+   Uses
+      At line 618 in file prac5.s
+      At line 641 in file prac5.s
+
+SCREEN_START 0000028E
+
+Symbol: SCREEN_START
+   Definitions
+      At line 35 in file prac5.s
+   Uses
+      At line 141 in file prac5.s
+Comment: SCREEN_START used once
+SCREEN_START_END 000002CD
+
+Symbol: SCREEN_START_END
+   Definitions
+      At line 36 in file prac5.s
+   Uses
+      At line 142 in file prac5.s
+Comment: SCREEN_START_END used once
+SCREEN_WIN 0000014D
+
+Symbol: SCREEN_WIN
+   Definitions
+      At line 33 in file prac5.s
+   Uses
+      At line 325 in file prac5.s
+Comment: SCREEN_WIN used once
+SCREEN_WIN_END 0000028D
+
+Symbol: SCREEN_WIN_END
+   Definitions
+      At line 34 in file prac5.s
+   Uses
+      At line 326 in file prac5.s
+Comment: SCREEN_WIN_END used once
+bullet_count 000002E0
+
+Symbol: bullet_count
+   Definitions
+      At line 59 in file prac5.s
+   Uses
+      At line 505 in file prac5.s
+      At line 534 in file prac5.s
+      At line 995 in file prac5.s
+      At line 1141 in file prac5.s
+
+bullet_count_d1 000002E8
+
+
+
+ARM Macro Assembler    Page 3 Alphabetic symbol ordering
+Relocatable symbols
+
+
+Symbol: bullet_count_d1
+   Definitions
+      At line 62 in file prac5.s
+   Uses
+      At line 195 in file prac5.s
+Comment: bullet_count_d1 used once
+bullet_count_d2 000002E9
+
+Symbol: bullet_count_d2
+   Definitions
+      At line 63 in file prac5.s
+   Uses
+      None
+Comment: bullet_count_d2 unused
+bullet_count_d3 000002EA
+
+Symbol: bullet_count_d3
+   Definitions
+      At line 64 in file prac5.s
+   Uses
+      None
+Comment: bullet_count_d3 unused
+bullet_count_d4 000002EB
+
+Symbol: bullet_count_d4
+   Definitions
+      At line 65 in file prac5.s
+   Uses
+      None
+Comment: bullet_count_d4 unused
+bullet_timer 000002DC
+
+Symbol: bullet_timer
+   Definitions
+      At line 56 in file prac5.s
+   Uses
+      At line 259 in file prac5.s
+      At line 271 in file prac5.s
+
+bullets_over 000002E4
+
+Symbol: bullets_over
+   Definitions
+      At line 60 in file prac5.s
+   Uses
+      At line 1000 in file prac5.s
+      At line 1007 in file prac5.s
+
+datos 00000000
+
+Symbol: datos
+   Definitions
+      At line 1 in file prac5.s
+   Uses
+      None
+Comment: datos unused
+enemy_count 00000344
+
+
+
+
+ARM Macro Assembler    Page 4 Alphabetic symbol ordering
+Relocatable symbols
+
+Symbol: enemy_count
+   Definitions
+      At line 93 in file prac5.s
+   Uses
+      At line 303 in file prac5.s
+      At line 1132 in file prac5.s
+
+enemy_timer 000002F8
+
+Symbol: enemy_timer
+   Definitions
+      At line 83 in file prac5.s
+   Uses
+      At line 222 in file prac5.s
+      At line 743 in file prac5.s
+
+fin 00000004
+
+Symbol: fin
+   Definitions
+      At line 21 in file prac5.s
+   Uses
+      At line 277 in file prac5.s
+      At line 661 in file prac5.s
+      At line 1014 in file prac5.s
+      At line 1136 in file prac5.s
+
+reloj 00000000
+
+Symbol: reloj
+   Definitions
+      At line 20 in file prac5.s
+   Uses
+      At line 224 in file prac5.s
+      At line 240 in file prac5.s
+      At line 261 in file prac5.s
+      At line 358 in file prac5.s
+      At line 835 in file prac5.s
+
+score 000002EC
+
+Symbol: score
+   Definitions
+      At line 67 in file prac5.s
+   Uses
+      At line 1110 in file prac5.s
+Comment: score used once
+score_d1 000002F0
+
+Symbol: score_d1
+   Definitions
+      At line 69 in file prac5.s
+   Uses
+      At line 187 in file prac5.s
+      At line 1115 in file prac5.s
+
+score_d2 000002F1
+
+Symbol: score_d2
+
+
+
+ARM Macro Assembler    Page 5 Alphabetic symbol ordering
+Relocatable symbols
+
+   Definitions
+      At line 70 in file prac5.s
+   Uses
+      None
+Comment: score_d2 unused
+score_d3 000002F2
+
+Symbol: score_d3
+   Definitions
+      At line 71 in file prac5.s
+   Uses
+      None
+Comment: score_d3 unused
+score_d4 000002F3
+
+Symbol: score_d4
+   Definitions
+      At line 72 in file prac5.s
+   Uses
+      None
+Comment: score_d4 unused
+29 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+RSI_reloj 00000278
+
+Symbol: RSI_reloj
+   Definitions
+      At line 337 in file prac5.s
+   Uses
+      At line 107 in file prac5.s
+Comment: RSI_reloj used once
+RSI_teclado 000002D8
+
+Symbol: RSI_teclado
+   Definitions
+      At line 378 in file prac5.s
+   Uses
+      At line 113 in file prac5.s
+Comment: RSI_teclado used once
+SBR_actualizar_contador 00000618
+
+Symbol: SBR_actualizar_contador
+   Definitions
+      At line 704 in file prac5.s
+   Uses
+      At line 190 in file prac5.s
+      At line 198 in file prac5.s
+      At line 1124 in file prac5.s
+
+SBR_enemigo_derrotado 000009C4
+
+Symbol: SBR_enemigo_derrotado
+   Definitions
+      At line 1077 in file prac5.s
+   Uses
+      At line 528 in file prac5.s
+      At line 1053 in file prac5.s
+
+SBR_intro_enemigo 00000654
+
+Symbol: SBR_intro_enemigo
+   Definitions
+      At line 731 in file prac5.s
+   Uses
+      At line 228 in file prac5.s
+Comment: SBR_intro_enemigo used once
+SBR_limpiar_pantalla 000005E4
+
+Symbol: SBR_limpiar_pantalla
+   Definitions
+      At line 677 in file prac5.s
+   Uses
+      At line 131 in file prac5.s
+      At line 172 in file prac5.s
+      At line 300 in file prac5.s
+
+SBR_mover_balas 000008E4
+
+Symbol: SBR_mover_balas
+   Definitions
+      At line 988 in file prac5.s
+   Uses
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+Relocatable symbols
+
+      At line 266 in file prac5.s
+Comment: SBR_mover_balas used once
+SBR_mover_enemigo 00000794
+
+Symbol: SBR_mover_enemigo
+   Definitions
+      At line 851 in file prac5.s
+   Uses
+      At line 249 in file prac5.s
+Comment: SBR_mover_enemigo used once
+SBR_restar_marcador 00000B60
+
+Symbol: SBR_restar_marcador
+   Definitions
+      At line 1229 in file prac5.s
+   Uses
+      At line 543 in file prac5.s
+Comment: SBR_restar_marcador used once
+SBR_sumar_marcador 00000AA8
+
+Symbol: SBR_sumar_marcador
+   Definitions
+      At line 1164 in file prac5.s
+   Uses
+      At line 1118 in file prac5.s
+      At line 1151 in file prac5.s
+
+SBR_teclado 0000032C
+
+Symbol: SBR_teclado
+   Definitions
+      At line 425 in file prac5.s
+   Uses
+      At line 219 in file prac5.s
+Comment: SBR_teclado used once
+bc_01 00000604
+
+Symbol: bc_01
+   Definitions
+      At line 689 in file prac5.s
+   Uses
+      At line 691 in file prac5.s
+Comment: bc_01 used once
+bc_01_end 00000610
+
+Symbol: bc_01_end
+   Definitions
+      At line 692 in file prac5.s
+   Uses
+      At line 688 in file prac5.s
+Comment: bc_01_end used once
+bc_02 00000118
+
+Symbol: bc_02
+   Definitions
+      At line 210 in file prac5.s
+   Uses
+      At line 212 in file prac5.s
+Comment: bc_02 used once
+
+
+
+ARM Macro Assembler    Page 3 Alphabetic symbol ordering
+Relocatable symbols
+
+bc_02_end 00000124
+
+Symbol: bc_02_end
+   Definitions
+      At line 213 in file prac5.s
+   Uses
+      At line 207 in file prac5.s
+Comment: bc_02_end used once
+bc_03 0000015C
+
+Symbol: bc_03
+   Definitions
+      At line 236 in file prac5.s
+   Uses
+      At line 254 in file prac5.s
+Comment: bc_03 used once
+bc_03_end 0000019C
+
+Symbol: bc_03_end
+   Definitions
+      At line 255 in file prac5.s
+   Uses
+      At line 235 in file prac5.s
+Comment: bc_03_end used once
+bc_04 000007E4
+
+Symbol: bc_04
+   Definitions
+      At line 886 in file prac5.s
+   Uses
+      At line 895 in file prac5.s
+      At line 901 in file prac5.s
+
+bc_04_end 00000840
+
+Symbol: bc_04_end
+   Definitions
+      At line 916 in file prac5.s
+   Uses
+      At line 896 in file prac5.s
+      At line 902 in file prac5.s
+
+bc_05 00000860
+
+Symbol: bc_05
+   Definitions
+      At line 929 in file prac5.s
+   Uses
+      At line 936 in file prac5.s
+      At line 947 in file prac5.s
+
+bc_05_end 000008A0
+
+Symbol: bc_05_end
+   Definitions
+      At line 950 in file prac5.s
+   Uses
+      At line 937 in file prac5.s
+Comment: bc_05_end used once
+
+
+
+ARM Macro Assembler    Page 4 Alphabetic symbol ordering
+Relocatable symbols
+
+bc_06 00000960
+
+Symbol: bc_06
+   Definitions
+      At line 1037 in file prac5.s
+   Uses
+      At line 1066 in file prac5.s
+Comment: bc_06 used once
+bc_06_end 000009BC
+
+Symbol: bc_06_end
+   Definitions
+      At line 1067 in file prac5.s
+   Uses
+      At line 1038 in file prac5.s
+Comment: bc_06_end used once
+bc_07 0000096C
+
+Symbol: bc_07
+   Definitions
+      At line 1041 in file prac5.s
+   Uses
+      At line 1063 in file prac5.s
+Comment: bc_07 used once
+bc_07_end 000009B4
+
+Symbol: bc_07_end
+   Definitions
+      At line 1064 in file prac5.s
+   Uses
+      At line 1042 in file prac5.s
+Comment: bc_07_end used once
+bc_08 00000944
+
+Symbol: bc_08
+   Definitions
+      At line 1026 in file prac5.s
+   Uses
+      At line 1032 in file prac5.s
+Comment: bc_08 used once
+bc_08_end 0000095C
+
+Symbol: bc_08_end
+   Definitions
+      At line 1033 in file prac5.s
+   Uses
+      At line 1024 in file prac5.s
+Comment: bc_08_end used once
+bc_09 00000A0C
+
+Symbol: bc_09
+   Definitions
+      At line 1101 in file prac5.s
+   Uses
+      At line 1103 in file prac5.s
+Comment: bc_09 used once
+bc_09_end 00000A18
+
+Symbol: bc_09_end
+
+
+
+ARM Macro Assembler    Page 5 Alphabetic symbol ordering
+Relocatable symbols
+
+   Definitions
+      At line 1104 in file prac5.s
+   Uses
+      At line 1099 in file prac5.s
+Comment: bc_09_end used once
+bc_10 00000ABC
+
+Symbol: bc_10
+   Definitions
+      At line 1173 in file prac5.s
+   Uses
+      At line 1192 in file prac5.s
+      At line 1200 in file prac5.s
+      At line 1208 in file prac5.s
+      At line 1216 in file prac5.s
+
+bc_10_end 00000B58
+
+Symbol: bc_10_end
+   Definitions
+      At line 1218 in file prac5.s
+   Uses
+      At line 1185 in file prac5.s
+Comment: bc_10_end used once
+bc_11 000004E0
+
+Symbol: bc_11
+   Definitions
+      At line 576 in file prac5.s
+   Uses
+      At line 582 in file prac5.s
+Comment: bc_11 used once
+bc_12 00000528
+
+Symbol: bc_12
+   Definitions
+      At line 598 in file prac5.s
+   Uses
+      At line 604 in file prac5.s
+Comment: bc_12 used once
+bc_13 00000B74
+
+Symbol: bc_13
+   Definitions
+      At line 1237 in file prac5.s
+   Uses
+      At line 1245 in file prac5.s
+Comment: bc_13 used once
+bc_13_end 00000B98
+
+Symbol: bc_13_end
+   Definitions
+      At line 1247 in file prac5.s
+   Uses
+      At line 1238 in file prac5.s
+Comment: bc_13_end used once
+bc_14 000006A4
+
+Symbol: bc_14
+
+
+
+ARM Macro Assembler    Page 6 Alphabetic symbol ordering
+Relocatable symbols
+
+   Definitions
+      At line 759 in file prac5.s
+   Uses
+      At line 768 in file prac5.s
+Comment: bc_14 used once
+bc_14_end 000006C8
+
+Symbol: bc_14_end
+   Definitions
+      At line 771 in file prac5.s
+   Uses
+      At line 762 in file prac5.s
+Comment: bc_14_end used once
+bc_15a 000006EC
+
+Symbol: bc_15a
+   Definitions
+      At line 783 in file prac5.s
+   Uses
+      At line 785 in file prac5.s
+Comment: bc_15a used once
+bc_15a_end 000006F8
+
+Symbol: bc_15a_end
+   Definitions
+      At line 786 in file prac5.s
+   Uses
+      At line 782 in file prac5.s
+Comment: bc_15a_end used once
+bc_15b 00000700
+
+Symbol: bc_15b
+   Definitions
+      At line 790 in file prac5.s
+   Uses
+      At line 792 in file prac5.s
+Comment: bc_15b used once
+bc_15b_end 0000070C
+
+Symbol: bc_15b_end
+   Definitions
+      At line 793 in file prac5.s
+   Uses
+      At line 789 in file prac5.s
+Comment: bc_15b_end used once
+bc_go 00000230
+
+Symbol: bc_go
+   Definitions
+      At line 314 in file prac5.s
+   Uses
+      At line 319 in file prac5.s
+Comment: bc_go used once
+bc_pause 0000057C
+
+Symbol: bc_pause
+   Definitions
+      At line 628 in file prac5.s
+   Uses
+
+
+
+ARM Macro Assembler    Page 7 Alphabetic symbol ordering
+Relocatable symbols
+
+      At line 634 in file prac5.s
+Comment: bc_pause used once
+bc_pause_clr 000005A8
+
+Symbol: bc_pause_clr
+   Definitions
+      At line 643 in file prac5.s
+   Uses
+      At line 648 in file prac5.s
+Comment: bc_pause_clr used once
+bc_pause_clr_end 000005BC
+
+Symbol: bc_pause_clr_end
+   Definitions
+      At line 649 in file prac5.s
+   Uses
+      At line 645 in file prac5.s
+Comment: bc_pause_clr_end used once
+bc_pause_end 00000594
+
+Symbol: bc_pause_end
+   Definitions
+      At line 635 in file prac5.s
+   Uses
+      At line 631 in file prac5.s
+      At line 633 in file prac5.s
+
+bc_pause_msg 00000564
+
+Symbol: bc_pause_msg
+   Definitions
+      At line 619 in file prac5.s
+   Uses
+      At line 624 in file prac5.s
+Comment: bc_pause_msg used once
+bc_pause_msg_end 00000578
+
+Symbol: bc_pause_msg_end
+   Definitions
+      At line 625 in file prac5.s
+   Uses
+      At line 621 in file prac5.s
+Comment: bc_pause_msg_end used once
+bc_rand 00000080
+
+Symbol: bc_rand
+   Definitions
+      At line 155 in file prac5.s
+   Uses
+      At line 159 in file prac5.s
+Comment: bc_rand used once
+bc_start 00000060
+
+Symbol: bc_start
+   Definitions
+      At line 143 in file prac5.s
+   Uses
+      At line 149 in file prac5.s
+Comment: bc_start used once
+
+
+
+ARM Macro Assembler    Page 8 Alphabetic symbol ordering
+Relocatable symbols
+
+bc_start_end 00000078
+
+Symbol: bc_start_end
+   Definitions
+      At line 150 in file prac5.s
+   Uses
+      At line 145 in file prac5.s
+Comment: bc_start_end used once
+bc_win 0000025C
+
+Symbol: bc_win
+   Definitions
+      At line 327 in file prac5.s
+   Uses
+      At line 332 in file prac5.s
+Comment: bc_win used once
+bfin 00000274
+
+Symbol: bfin
+   Definitions
+      At line 334 in file prac5.s
+   Uses
+      At line 315 in file prac5.s
+      At line 328 in file prac5.s
+      At line 334 in file prac5.s
+
+bucle 00000124
+
+Symbol: bucle
+   Definitions
+      At line 215 in file prac5.s
+   Uses
+      At line 280 in file prac5.s
+Comment: bucle used once
+bullet 0000040C
+
+Symbol: bullet
+   Definitions
+      At line 504 in file prac5.s
+   Uses
+      At line 449 in file prac5.s
+Comment: bullet used once
+bullet_f 00000488
+
+Symbol: bullet_f
+   Definitions
+      At line 547 in file prac5.s
+   Uses
+      At line 452 in file prac5.s
+Comment: bullet_f used once
+bullet_s 000004A0
+
+Symbol: bullet_s
+   Definitions
+      At line 555 in file prac5.s
+   Uses
+      At line 455 in file prac5.s
+Comment: bullet_s used once
+bullets_end 00000934
+
+
+
+ARM Macro Assembler    Page 9 Alphabetic symbol ordering
+Relocatable symbols
+
+
+Symbol: bullets_end
+   Definitions
+      At line 1017 in file prac5.s
+   Uses
+      At line 1003 in file prac5.s
+      At line 1012 in file prac5.s
+
+canyon_drch 000003E8
+
+Symbol: canyon_drch
+   Definitions
+      At line 492 in file prac5.s
+   Uses
+      At line 444 in file prac5.s
+      At line 446 in file prac5.s
+
+canyon_izq 000003C4
+
+Symbol: canyon_izq
+   Definitions
+      At line 479 in file prac5.s
+   Uses
+      At line 439 in file prac5.s
+      At line 441 in file prac5.s
+
+codigo 00000000
+
+Symbol: codigo
+   Definitions
+      At line 98 in file prac5.s
+   Uses
+      None
+Comment: codigo unused
+del_end 000008D8
+
+Symbol: del_end
+   Definitions
+      At line 978 in file prac5.s
+   Uses
+      At line 972 in file prac5.s
+Comment: del_end used once
+del_l 000008C4
+
+Symbol: del_l
+   Definitions
+      At line 968 in file prac5.s
+   Uses
+      None
+Comment: del_l unused
+del_r 000008D0
+
+Symbol: del_r
+   Definitions
+      At line 974 in file prac5.s
+   Uses
+      At line 967 in file prac5.s
+Comment: del_r used once
+dig1 00000AF0
+
+
+
+ARM Macro Assembler    Page 10 Alphabetic symbol ordering
+Relocatable symbols
+
+
+Symbol: dig1
+   Definitions
+      At line 1188 in file prac5.s
+   Uses
+      At line 1175 in file prac5.s
+      At line 1199 in file prac5.s
+
+dig2 00000B04
+
+Symbol: dig2
+   Definitions
+      At line 1194 in file prac5.s
+   Uses
+      At line 1178 in file prac5.s
+      At line 1207 in file prac5.s
+
+dig3 00000B20
+
+Symbol: dig3
+   Definitions
+      At line 1202 in file prac5.s
+   Uses
+      At line 1181 in file prac5.s
+      At line 1215 in file prac5.s
+
+dig4 00000B3C
+
+Symbol: dig4
+   Definitions
+      At line 1210 in file prac5.s
+   Uses
+      At line 1184 in file prac5.s
+Comment: dig4 used once
+enemigo_ultima_fila 00000448
+
+Symbol: enemigo_ultima_fila
+   Definitions
+      At line 525 in file prac5.s
+   Uses
+      At line 520 in file prac5.s
+      At line 522 in file prac5.s
+
+enemy_f 000004B8
+
+Symbol: enemy_f
+   Definitions
+      At line 563 in file prac5.s
+   Uses
+      At line 458 in file prac5.s
+      At line 460 in file prac5.s
+
+enemy_s 00000500
+
+Symbol: enemy_s
+   Definitions
+      At line 585 in file prac5.s
+   Uses
+      At line 463 in file prac5.s
+
+
+
+ARM Macro Assembler    Page 11 Alphabetic symbol ordering
+Relocatable symbols
+
+      At line 465 in file prac5.s
+
+enm_end 000008A8
+
+Symbol: enm_end
+   Definitions
+      At line 956 in file prac5.s
+   Uses
+      At line 876 in file prac5.s
+      At line 914 in file prac5.s
+      At line 920 in file prac5.s
+      At line 930 in file prac5.s
+
+enm_l 000007E0
+
+Symbol: enm_l
+   Definitions
+      At line 884 in file prac5.s
+   Uses
+      None
+Comment: enm_l unused
+enm_r 00000850
+
+Symbol: enm_r
+   Definitions
+      At line 922 in file prac5.s
+   Uses
+      At line 881 in file prac5.s
+Comment: enm_r used once
+finsi 000001CC
+
+Symbol: finsi
+   Definitions
+      At line 274 in file prac5.s
+   Uses
+      At line 265 in file prac5.s
+Comment: finsi used once
+found 0000098C
+
+Symbol: found
+   Definitions
+      At line 1051 in file prac5.s
+   Uses
+      None
+Comment: found unused
+go 0000021C
+
+Symbol: go
+   Definitions
+      At line 309 in file prac5.s
+   Uses
+      None
+Comment: go unused
+inicio 00000000
+
+Symbol: inicio
+   Definitions
+      At line 102 in file prac5.s
+   Uses
+
+
+
+ARM Macro Assembler    Page 12 Alphabetic symbol ordering
+Relocatable symbols
+
+      At line 99 in file prac5.s
+Comment: inicio used once
+no_bullets 00000910
+
+Symbol: no_bullets
+   Definitions
+      At line 1005 in file prac5.s
+   Uses
+      At line 998 in file prac5.s
+Comment: no_bullets used once
+not_found 0000099C
+
+Symbol: not_found
+   Definitions
+      At line 1056 in file prac5.s
+   Uses
+      At line 1048 in file prac5.s
+Comment: not_found used once
+pause 00000548
+
+Symbol: pause
+   Definitions
+      At line 607 in file prac5.s
+   Uses
+      At line 468 in file prac5.s
+      At line 470 in file prac5.s
+
+quit 000005D0
+
+Symbol: quit
+   Definitions
+      At line 660 in file prac5.s
+   Uses
+      At line 473 in file prac5.s
+      At line 475 in file prac5.s
+
+skip01 00000190
+
+Symbol: skip01
+   Definitions
+      At line 252 in file prac5.s
+   Uses
+      At line 238 in file prac5.s
+      At line 244 in file prac5.s
+
+skip02 00000810
+
+Symbol: skip02
+   Definitions
+      At line 898 in file prac5.s
+   Uses
+      At line 887 in file prac5.s
+Comment: skip02 used once
+skip03 00000824
+
+Symbol: skip03
+   Definitions
+      At line 904 in file prac5.s
+   Uses
+
+
+
+ARM Macro Assembler    Page 13 Alphabetic symbol ordering
+Relocatable symbols
+
+      At line 889 in file prac5.s
+Comment: skip03 used once
+skip04 00000884
+
+Symbol: skip04
+   Definitions
+      At line 939 in file prac5.s
+   Uses
+      At line 925 in file prac5.s
+Comment: skip04 used once
+skip06 000009A8
+
+Symbol: skip06
+   Definitions
+      At line 1061 in file prac5.s
+   Uses
+      At line 1045 in file prac5.s
+Comment: skip06 used once
+skip09 000005DC
+
+Symbol: skip09
+   Definitions
+      At line 665 in file prac5.s
+   Uses
+      At line 477 in file prac5.s
+      At line 482 in file prac5.s
+      At line 490 in file prac5.s
+      At line 495 in file prac5.s
+      At line 503 in file prac5.s
+      At line 508 in file prac5.s
+      At line 538 in file prac5.s
+      At line 545 in file prac5.s
+      At line 553 in file prac5.s
+      At line 561 in file prac5.s
+      At line 567 in file prac5.s
+      At line 574 in file prac5.s
+      At line 583 in file prac5.s
+      At line 589 in file prac5.s
+      At line 596 in file prac5.s
+      At line 605 in file prac5.s
+      At line 657 in file prac5.s
+
+skip10 0000078C
+
+Symbol: skip10
+   Definitions
+      At line 840 in file prac5.s
+   Uses
+      At line 769 in file prac5.s
+Comment: skip10 used once
+skip12 00000458
+
+Symbol: skip12
+   Definitions
+      At line 530 in file prac5.s
+   Uses
+      At line 523 in file prac5.s
+Comment: skip12 used once
+skip13 00000474
+
+
+
+ARM Macro Assembler    Page 14 Alphabetic symbol ordering
+Relocatable symbols
+
+
+Symbol: skip13
+   Definitions
+      At line 539 in file prac5.s
+   Uses
+      At line 533 in file prac5.s
+Comment: skip13 used once
+win 00000248
+
+Symbol: win
+   Definitions
+      At line 322 in file prac5.s
+   Uses
+      At line 306 in file prac5.s
+Comment: win used once
+92 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Absolute symbols
+
+BULLET_QUICK 00000001
+
+Symbol: BULLET_QUICK
+   Definitions
+      At line 53 in file prac5.s
+   Uses
+      At line 550 in file prac5.s
+Comment: BULLET_QUICK used once
+BULLET_SLOW 00000080
+
+Symbol: BULLET_SLOW
+   Definitions
+      At line 54 in file prac5.s
+   Uses
+      At line 558 in file prac5.s
+Comment: BULLET_SLOW used once
+CANYON_CENTER 00000010
+
+Symbol: CANYON_CENTER
+   Definitions
+      At line 47 in file prac5.s
+   Uses
+      At line 178 in file prac5.s
+Comment: CANYON_CENTER used once
+CHAR_BULLET 0000002A
+
+Symbol: CHAR_BULLET
+   Definitions
+      At line 49 in file prac5.s
+   Uses
+      At line 515 in file prac5.s
+      At line 532 in file prac5.s
+      At line 1028 in file prac5.s
+      At line 1044 in file prac5.s
+
+CHAR_BULLET_F 0000002B
+
+Symbol: CHAR_BULLET_F
+   Definitions
+      At line 51 in file prac5.s
+   Uses
+      At line 451 in file prac5.s
+Comment: CHAR_BULLET_F used once
+CHAR_BULLET_S 0000002D
+
+Symbol: CHAR_BULLET_S
+   Definitions
+      At line 52 in file prac5.s
+   Uses
+      At line 454 in file prac5.s
+Comment: CHAR_BULLET_S used once
+CHAR_BULLET_SHOOT 00000020
+
+Symbol: CHAR_BULLET_SHOOT
+   Definitions
+      At line 50 in file prac5.s
+   Uses
+      At line 448 in file prac5.s
+Comment: CHAR_BULLET_SHOOT used once
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+Absolute symbols
+
+CHAR_CANYON 00000023
+
+Symbol: CHAR_CANYON
+   Definitions
+      At line 44 in file prac5.s
+   Uses
+      At line 180 in file prac5.s
+      At line 488 in file prac5.s
+      At line 501 in file prac5.s
+
+CHAR_CANYON_L 0000004B
+
+Symbol: CHAR_CANYON_L
+   Definitions
+      At line 45 in file prac5.s
+   Uses
+      At line 438 in file prac5.s
+      At line 440 in file prac5.s
+
+CHAR_CANYON_R 0000004C
+
+Symbol: CHAR_CANYON_R
+   Definitions
+      At line 46 in file prac5.s
+   Uses
+      At line 443 in file prac5.s
+      At line 445 in file prac5.s
+
+CHAR_CLEAR 00000020
+
+Symbol: CHAR_CLEAR
+   Definitions
+      At line 42 in file prac5.s
+   Uses
+      At line 485 in file prac5.s
+      At line 498 in file prac5.s
+      At line 642 in file prac5.s
+      At line 685 in file prac5.s
+      At line 917 in file prac5.s
+      At line 927 in file prac5.s
+      At line 1029 in file prac5.s
+      At line 1047 in file prac5.s
+      At line 1055 in file prac5.s
+      At line 1058 in file prac5.s
+      At line 1100 in file prac5.s
+
+CHAR_ENEMY_F 00000041
+
+Symbol: CHAR_ENEMY_F
+   Definitions
+      At line 76 in file prac5.s
+   Uses
+      At line 457 in file prac5.s
+      At line 459 in file prac5.s
+
+CHAR_ENEMY_L 0000003C
+
+Symbol: CHAR_ENEMY_L
+   Definitions
+
+
+
+ARM Macro Assembler    Page 3 Alphabetic symbol ordering
+Absolute symbols
+
+      At line 74 in file prac5.s
+   Uses
+      At line 519 in file prac5.s
+      At line 910 in file prac5.s
+      At line 943 in file prac5.s
+
+CHAR_ENEMY_R 0000003E
+
+Symbol: CHAR_ENEMY_R
+   Definitions
+      At line 75 in file prac5.s
+   Uses
+      At line 521 in file prac5.s
+      At line 908 in file prac5.s
+      At line 945 in file prac5.s
+
+CHAR_ENEMY_S 0000005A
+
+Symbol: CHAR_ENEMY_S
+   Definitions
+      At line 77 in file prac5.s
+   Uses
+      At line 462 in file prac5.s
+      At line 464 in file prac5.s
+
+CHAR_PAUSE 00000050
+
+Symbol: CHAR_PAUSE
+   Definitions
+      At line 95 in file prac5.s
+   Uses
+      At line 467 in file prac5.s
+      At line 469 in file prac5.s
+      At line 630 in file prac5.s
+      At line 632 in file prac5.s
+
+CHAR_QUIT 00000051
+
+Symbol: CHAR_QUIT
+   Definitions
+      At line 96 in file prac5.s
+   Uses
+      At line 472 in file prac5.s
+      At line 474 in file prac5.s
+
+DIR_SCREEN 40007E00
+
+Symbol: DIR_SCREEN
+   Definitions
+      At line 27 in file prac5.s
+   Uses
+      At line 127 in file prac5.s
+      At line 137 in file prac5.s
+      At line 168 in file prac5.s
+      At line 616 in file prac5.s
+      At line 640 in file prac5.s
+
+ENEMY_MAX 0000000A
+
+
+
+
+ARM Macro Assembler    Page 4 Alphabetic symbol ordering
+Absolute symbols
+
+Symbol: ENEMY_MAX
+   Definitions
+      At line 79 in file prac5.s
+   Uses
+      At line 781 in file prac5.s
+      At line 783 in file prac5.s
+      At line 784 in file prac5.s
+      At line 1108 in file prac5.s
+
+ENEMY_MIN 00000002
+
+Symbol: ENEMY_MIN
+   Definitions
+      At line 78 in file prac5.s
+   Uses
+      At line 788 in file prac5.s
+      At line 790 in file prac5.s
+      At line 791 in file prac5.s
+
+ENEMY_QUICK 00000001
+
+Symbol: ENEMY_QUICK
+   Definitions
+      At line 80 in file prac5.s
+   Uses
+      At line 566 in file prac5.s
+      At line 577 in file prac5.s
+      At line 827 in file prac5.s
+      At line 828 in file prac5.s
+
+ENEMY_REG_DIM 00000009
+
+Symbol: ENEMY_REG_DIM
+   Definitions
+      At line 87 in file prac5.s
+   Uses
+      At line 88 in file prac5.s
+      At line 205 in file prac5.s
+      At line 233 in file prac5.s
+      At line 245 in file prac5.s
+      At line 526 in file prac5.s
+      At line 572 in file prac5.s
+      At line 594 in file prac5.s
+
+ENEMY_REG_FIELD 00000008
+
+Symbol: ENEMY_REG_FIELD
+   Definitions
+      At line 86 in file prac5.s
+   Uses
+      At line 88 in file prac5.s
+      At line 210 in file prac5.s
+      At line 252 in file prac5.s
+      At line 580 in file prac5.s
+      At line 602 in file prac5.s
+      At line 756 in file prac5.s
+      At line 764 in file prac5.s
+      At line 1085 in file prac5.s
+
+
+
+
+ARM Macro Assembler    Page 5 Alphabetic symbol ordering
+Absolute symbols
+
+ENEMY_REG_SIZE 00000048
+
+Symbol: ENEMY_REG_SIZE
+   Definitions
+      At line 88 in file prac5.s
+   Uses
+      At line 90 in file prac5.s
+      At line 765 in file prac5.s
+
+ENEMY_SLOW 00000080
+
+Symbol: ENEMY_SLOW
+   Definitions
+      At line 81 in file prac5.s
+   Uses
+      At line 82 in file prac5.s
+      At line 588 in file prac5.s
+      At line 599 in file prac5.s
+      At line 829 in file prac5.s
+      At line 830 in file prac5.s
+
+IRQ_Timer0 00000004
+
+Symbol: IRQ_Timer0
+   Definitions
+      At line 5 in file prac5.s
+   Uses
+      At line 108 in file prac5.s
+      At line 121 in file prac5.s
+      At line 289 in file prac5.s
+      At line 612 in file prac5.s
+      At line 655 in file prac5.s
+
+IRQ_UART 00000007
+
+Symbol: IRQ_UART
+   Definitions
+      At line 6 in file prac5.s
+   Uses
+      At line 114 in file prac5.s
+      At line 122 in file prac5.s
+      At line 291 in file prac5.s
+
+I_Bit 00000080
+
+Symbol: I_Bit
+   Definitions
+      At line 16 in file prac5.s
+   Uses
+      At line 349 in file prac5.s
+      At line 365 in file prac5.s
+      At line 390 in file prac5.s
+      At line 407 in file prac5.s
+
+IntEnableOffset 00000010
+
+Symbol: IntEnableOffset
+   Definitions
+      At line 4 in file prac5.s
+
+
+
+ARM Macro Assembler    Page 6 Alphabetic symbol ordering
+Absolute symbols
+
+   Uses
+      None
+Comment: IntEnableOffset unused
+MINUS 00000020
+
+Symbol: MINUS
+   Definitions
+      At line 22 in file prac5.s
+   Uses
+      At line 440 in file prac5.s
+      At line 445 in file prac5.s
+      At line 459 in file prac5.s
+      At line 464 in file prac5.s
+      At line 469 in file prac5.s
+      At line 474 in file prac5.s
+      At line 632 in file prac5.s
+
+SCREEN_C 00000020
+
+Symbol: SCREEN_C
+   Definitions
+      At line 29 in file prac5.s
+   Uses
+      At line 30 in file prac5.s
+      At line 47 in file prac5.s
+      At line 138 in file prac5.s
+      At line 177 in file prac5.s
+      At line 194 in file prac5.s
+      At line 296 in file prac5.s
+      At line 298 in file prac5.s
+      At line 309 in file prac5.s
+      At line 322 in file prac5.s
+      At line 494 in file prac5.s
+      At line 513 in file prac5.s
+      At line 541 in file prac5.s
+      At line 616 in file prac5.s
+      At line 640 in file prac5.s
+      At line 808 in file prac5.s
+      At line 859 in file prac5.s
+      At line 888 in file prac5.s
+      At line 929 in file prac5.s
+      At line 951 in file prac5.s
+      At line 975 in file prac5.s
+      At line 1019 in file prac5.s
+      At line 1041 in file prac5.s
+      At line 1046 in file prac5.s
+      At line 1057 in file prac5.s
+      At line 1090 in file prac5.s
+      At line 1147 in file prac5.s
+
+SCREEN_PX 00000200
+
+Symbol: SCREEN_PX
+   Definitions
+      At line 30 in file prac5.s
+   Uses
+      At line 128 in file prac5.s
+      At line 169 in file prac5.s
+      At line 296 in file prac5.s
+
+
+
+ARM Macro Assembler    Page 7 Alphabetic symbol ordering
+Absolute symbols
+
+
+SCREEN_R 00000010
+
+Symbol: SCREEN_R
+   Definitions
+      At line 28 in file prac5.s
+   Uses
+      At line 30 in file prac5.s
+      At line 752 in file prac5.s
+      At line 753 in file prac5.s
+      At line 754 in file prac5.s
+      At line 1011 in file prac5.s
+      At line 1037 in file prac5.s
+
+T0_IR E0004000
+
+Symbol: T0_IR
+   Definitions
+      At line 14 in file prac5.s
+   Uses
+      At line 353 in file prac5.s
+Comment: T0_IR used once
+UART_IR E0010000
+
+Symbol: UART_IR
+   Definitions
+      At line 15 in file prac5.s
+   Uses
+      At line 400 in file prac5.s
+Comment: UART_IR used once
+VICBaseEnabl FFFFF000
+
+Symbol: VICBaseEnabl
+   Definitions
+      At line 3 in file prac5.s
+   Uses
+      None
+Comment: VICBaseEnabl unused
+VICIntEnClr FFFFF014
+
+Symbol: VICIntEnClr
+   Definitions
+      At line 9 in file prac5.s
+   Uses
+      At line 285 in file prac5.s
+      At line 609 in file prac5.s
+
+VICIntEnable FFFFF010
+
+Symbol: VICIntEnable
+   Definitions
+      At line 8 in file prac5.s
+   Uses
+      At line 119 in file prac5.s
+      At line 652 in file prac5.s
+
+VICVectAddr FFFFF030
+
+Symbol: VICVectAddr
+
+
+
+ARM Macro Assembler    Page 8 Alphabetic symbol ordering
+Absolute symbols
+
+   Definitions
+      At line 13 in file prac5.s
+   Uses
+      At line 374 in file prac5.s
+      At line 416 in file prac5.s
+
+VICVectAddr0 FFFFF100
+
+Symbol: VICVectAddr0
+   Definitions
+      At line 11 in file prac5.s
+   Uses
+      At line 105 in file prac5.s
+Comment: VICVectAddr0 used once
+40 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+External symbols
+
+rand 00000000
+
+Symbol: rand
+   Definitions
+      At line 101 in file prac5.s
+   Uses
+      At line 739 in file prac5.s
+      At line 750 in file prac5.s
+      At line 776 in file prac5.s
+      At line 799 in file prac5.s
+      At line 819 in file prac5.s
+
+srand 00000000
+
+Symbol: srand
+   Definitions
+      At line 100 in file prac5.s
+   Uses
+      At line 161 in file prac5.s
+Comment: srand used once
+2 symbols
+489 symbols in table
